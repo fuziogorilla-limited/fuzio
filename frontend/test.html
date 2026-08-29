@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzio Gorilla — Industrial Workwear &amp; Supplies</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F1EEE6;
+            --paper: #FBF9F4;
+            --ink: #15140F;
+            --ink-2: #211F18;
+            --accent: #FF6A13;
+            --accent-dark: #C94E00;
+            --steel: #6E6C63;
+            --steel-light: #A9A69A;
+            --green: #2F6B3A;
+            --line: rgba(21, 20, 15, 0.13);
+            --line-soft: rgba(21, 20, 15, 0.07);
+            --radius: 2px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Montserrat', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hazard {
+            height: 6px;
+            background: repeating-linear-gradient(135deg, var(--ink) 0 10px, var(--accent) 10px 20px);
+        }
+
+        .wrap {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--accent-dark);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 22px;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            border: 2px solid var(--ink);
+            background: var(--ink);
+            color: var(--paper);
+            border-radius: var(--radius);
+            transition: transform .12s ease, background .12s ease, color .12s ease, border-color .12s ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--ink);
+            transform: translateY(-1px);
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .btn.outline {
+            background: transparent;
+            color: var(--ink);
+        }
+
+        .btn.outline:hover {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
+        }
+
+        .btn.accent {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--ink);
+        }
+
+        .btn.accent:hover {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--paper);
+        }
+
+        .btn.wa {
+            background: var(--green);
+            border-color: var(--green);
+            color: #fff;
+        }
+
+        .btn.wa:hover {
+            background: #245530;
+            border-color: #245530;
+        }
+
+        .btn.full {
+            width: 100%;
+        }
+
+        .btn.small {
+            padding: 9px 14px;
+            font-size: 11px;
+        }
+
+        .btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== HEADER ===== */
+        header.site {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 14px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .logo-badge {
+            width: 38px;
+            height: 38px;
+            background: var(--accent);
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 15px;
+            letter-spacing: -.02em;
+            border: 2px solid var(--paper);
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            line-height: 1;
+        }
+
+        .logo-text .name {
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: .02em;
+        }
+
+        .logo-text .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: .13em;
+            color: var(--accent);
+            margin-top: 3px;
+        }
+
+        nav.main-links {
+            display: flex;
+            gap: 26px;
+            margin-left: 8px;
+        }
+
+        nav.main-links a {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            opacity: .85;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav.main-links a:hover {
+            opacity: 1;
+            border-color: var(--accent);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 360px;
+            display: flex;
+            align-items: center;
+            background: var(--ink-2);
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: var(--radius);
+            padding: 0 12px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--paper);
+            font-family: inherit;
+            font-size: 13px;
+            padding: 10px 8px;
+            width: 100%;
+        }
+
+        .search-box input::placeholder {
+            color: var(--steel-light);
+        }
+
+        .search-box svg {
+            flex-shrink: 0;
+            opacity: .6;
+        }
+
+        .head-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, .18);
+            color: var(--paper);
+            border-radius: var(--radius);
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--accent);
+            color: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 10px;
+            min-width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+        }
+
+        .hamburger {
+            display: none;
+        }
+
+        @media (max-width: 880px) {
+
+            nav.main-links,
+            .search-box {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        /* ===== HERO / IDENTITY BAND ===== */
+        .identity {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 28px 0 34px;
+            text-align: center;
+        }
+
+        .identity h1 {
+            font-size: clamp(30px, 5vw, 46px);
+            font-weight: 900;
+            letter-spacing: -.01em;
+            margin: 0 0 6px;
+        }
+
+        .identity h1 span {
+            color: var(--accent);
+        }
+
+        .identity p {
+            margin: 0;
+            font-size: 13px;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--steel-light);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ===== SECTION HEADERS ===== */
+        .section {
+            padding: 52px 0;
+        }
+
+        .section.tight {
+            padding: 36px 0;
+        }
+
+        .section-head {
+            margin-bottom: 26px;
+        }
+
+        .section-head h2 {
+            font-size: clamp(22px, 3vw, 30px);
+            font-weight: 800;
+            margin: 8px 0 0;
+            letter-spacing: -.01em;
+        }
+
+        /* ===== CATEGORY GRID ===== */
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        @media (max-width:980px) {
+            .cat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width:560px) {
+            .cat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cat-card {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            transition: transform .15s ease, box-shadow .15s ease;
+            text-align: left;
+        }
+
+        .cat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px rgba(21, 20, 15, .12);
+        }
+
+        .cat-visual {
+            height: 118px;
+            background: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cat-visual::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 5px;
+            background: repeating-linear-gradient(135deg, var(--accent) 0 8px, var(--ink) 8px 16px);
+        }
+
+        .cat-body {
+            padding: 16px 18px 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cat-body h3 {
+            font-size: 16px;
+            font-weight: 800;
+            margin: 0 0 6px;
+            letter-spacing: -.005em;
+        }
+
+        .cat-body .items {
+            font-size: 12px;
+            color: var(--steel);
+            margin: 0 0 16px;
+            line-height: 1.5;
+        }
+
+        .cat-body .shop-now {
+            margin-top: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 11.5px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--accent-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cat-card:hover .shop-now {
+            color: var(--ink);
+        }
+
+        /* ===== WHY / INDUSTRIES ===== */
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--line);
+            border: 1px solid var(--line);
+        }
+
+        @media (max-width:780px) {
+            .why-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .why-card {
+            background: var(--paper);
+            padding: 26px 22px;
+        }
+
+        .why-card .num {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-dark);
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .why-card h4 {
+            margin: 10px 0 8px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .why-card p {
+            margin: 0;
+            font-size: 13.5px;
+            color: var(--steel);
+            line-height: 1.6;
+        }
+
+        .industries {
+            background: var(--ink-2);
+            color: var(--paper);
+            padding: 34px 0;
+        }
+
+        .industries .section-head h2 {
+            color: var(--paper);
+        }
+
+        .industries .eyebrow {
+            color: var(--accent);
+        }
+
+        .ind-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ind-pill {
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 20px;
+            color: var(--steel-light);
+        }
+
+        .wa-cta {
+            background: var(--accent);
+            color: var(--ink);
+            text-align: center;
+            padding: 38px 24px;
+        }
+
+        .wa-cta h2 {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0 0 10px;
+        }
+
+        .wa-cta p {
+            margin: 0 0 18px;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+
+        /* ===== FOOTER ===== */
+        footer.site {
+            background: var(--ink);
+            color: var(--steel-light);
+            padding: 44px 0 20px;
+        }
+
+        .foot-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width:780px) {
+            .foot-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .foot-col h5 {
+            color: var(--paper);
+            font-size: 12px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin: 0 0 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .foot-col a,
+        .foot-col p {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 9px;
+            line-height: 1.5;
+            color: var(--steel-light);
+        }
+
+        .foot-col a:hover {
+            color: var(--accent);
+        }
+
+        .foot-bottom {
+            border-top: 1px solid rgba(255, 255, 255, .12);
+            padding-top: 18px;
+            font-size: 11.5px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: var(--steel);
+        }
+
+        /* ===== BREADCRUMB ===== */
+        .crumb {
+            font-size: 12px;
+            color: var(--steel);
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
+
+        .crumb a:hover {
+            color: var(--accent-dark);
+        }
+
+        .crumb .sep {
+            margin: 0 6px;
+            opacity: .5;
+        }
+
+        /* ===== CATEGORY / PRODUCT LISTING ===== */
+        .cat-hero {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 30px 0;
+        }
+
+        .cat-hero .eyebrow {
+            color: var(--accent);
+        }
+
+        .cat-hero h1 {
+            font-size: clamp(24px, 4vw, 34px);
+            font-weight: 900;
+            margin: 8px 0 6px;
+        }
+
+        .cat-hero p {
+            margin: 0;
+            color: var(--steel-light);
+            font-size: 14px;
+            max-width: 560px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar .count {
+            font-size: 13px;
+            color: var(--steel);
+            font-weight: 600;
+        }
+
+        select.sortsel {
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            background: var(--paper);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            border-radius: var(--radius);
+        }
+
+        .prod-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width:980px) {
+            .prod-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width:700px) {
+            .prod-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+        .prod-card {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .prod-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(21, 20, 15, .10);
+        }
+
+        .prod-visual {
+            aspect-ratio: 1/1;
+            background: var(--ink-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            position: relative;
+        }
+
+        .prod-visual .stock-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--paper);
+            color: var(--green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 3px 7px;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .prod-body {
+            padding: 13px 14px 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prod-body h4 {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin: 0 0 5px;
+            line-height: 1.35;
+        }
+
+        .prod-body .desc {
+            font-size: 11.5px;
+            color: var(--steel);
+            margin: 0 0 10px;
+            line-height: 1.5;
+        }
+
+        .prod-body .price {
+            margin-top: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 14.5px;
+        }
+
+        .prod-body .price .from {
+            font-size: 10px;
+            color: var(--steel);
+            font-weight: 600;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 2px;
+        }
+
+        .prod-body .add-mini {
+            margin-top: 10px;
+        }
+
+        /* ===== PRODUCT PAGE ===== */
+        .product-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 44px;
+            align-items: flex-start;
+        }
+
+        @media (max-width:860px) {
+            .product-view {
+                grid-template-columns: 1fr;
+                gap: 26px;
+            }
+        }
+
+        .gallery-main {
+            background: var(--ink-2);
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 90px;
+            position: relative;
+        }
+
+        .gallery-thumbs {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .gallery-thumbs div {
+            width: 56px;
+            height: 56px;
+            background: var(--ink-2);
+            opacity: .5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 1px solid var(--line);
+            cursor: pointer;
+        }
+
+        .gallery-thumbs div.active {
+            opacity: 1;
+            border-color: var(--accent);
+        }
+
+        .pd-name {
+            font-size: clamp(22px, 3vw, 30px);
+            font-weight: 800;
+            margin: 0 0 8px;
+            letter-spacing: -.01em;
+        }
+
+        .pd-price {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0 0 6px;
+        }
+
+        .pd-stock {
+            font-size: 12px;
+            color: var(--green);
+            font-weight: 700;
+            margin: 0 0 18px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pd-short {
+            font-size: 14px;
+            color: var(--steel);
+            line-height: 1.6;
+            margin: 0 0 22px;
+        }
+
+        .opt-block {
+            margin-bottom: 20px;
+        }
+
+        .opt-label {
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 9px;
+            display: block;
+            color: var(--ink);
+        }
+
+        .opt-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .opt-swatch {
+            padding: 9px 15px;
+            border: 1.5px solid var(--line);
+            background: var(--paper);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: var(--radius);
+        }
+
+        .opt-swatch.active {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .qty-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 1.5px solid var(--line);
+            width: fit-content;
+        }
+
+        .qty-row button {
+            width: 38px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .qty-row button:hover {
+            background: var(--bg);
+        }
+
+        .qty-row .qval {
+            width: 44px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .pd-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 26px;
+            max-width: 340px;
+        }
+
+        .specs {
+            margin-top: 30px;
+            border-top: 1px solid var(--line);
+            padding-top: 20px;
+        }
+
+        .specs h5 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin: 0 0 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .specs table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .specs td {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .specs td:first-child {
+            color: var(--steel);
+            width: 40%;
+        }
+
+        /* ===== CART DRAWER ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(21, 20, 15, .5);
+            z-index: 90;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 420px;
+            max-width: 92vw;
+            background: var(--paper);
+            z-index: 95;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform .25s ease;
+            box-shadow: -8px 0 30px rgba(0, 0, 0, .2);
+        }
+
+        .drawer.show {
+            transform: translateX(0);
+        }
+
+        .drawer-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .drawer-head h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            line-height: 1;
+            color: var(--steel);
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+
+        .cart-line {
+            display: flex;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .cart-line .thumb {
+            width: 58px;
+            height: 58px;
+            background: var(--ink-2);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .cart-line .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cart-line .info h6 {
+            margin: 0 0 3px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .cart-line .meta {
+            font-size: 11px;
+            color: var(--steel);
+            margin-bottom: 8px;
+        }
+
+        .cart-line .row2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mini-qty {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--line);
+        }
+
+        .mini-qty button {
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .mini-qty span {
+            width: 26px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .remove-link {
+            font-size: 11px;
+            color: var(--steel);
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-weight: 600;
+        }
+
+        .remove-link:hover {
+            color: var(--accent-dark);
+        }
+
+        .line-price {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--steel);
+            font-size: 13.5px;
+        }
+
+        .drawer-foot {
+            border-top: 1px solid var(--line);
+            padding: 18px 20px 22px;
+        }
+
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--steel);
+        }
+
+        .sum-row.total {
+            color: var(--ink);
+            font-weight: 800;
+            font-size: 16px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .drawer-foot .btn {
+            margin-top: 8px;
+        }
+
+        /* ===== CHECKOUT / CONFIRM ===== */
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        @media (max-width:860px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 7px;
+        }
+
+        .field input,
+        .field textarea {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1.5px solid var(--line);
+            background: var(--paper);
+            font-family: inherit;
+            font-size: 13.5px;
+            border-radius: var(--radius);
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--ink);
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width:520px) {
+            .field-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .order-box {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            padding: 22px;
+        }
+
+        .order-box h3 {
+            margin: 0 0 16px;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .oline {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .oline .nm {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .oline .meta {
+            color: var(--steel);
+            font-size: 11px;
+            display: block;
+        }
+
+        .confirm-wrap {
+            text-align: center;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .confirm-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--green);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 20px;
+        }
+
+        .confirm-wrap h1 {
+            font-size: 26px;
+            font-weight: 900;
+            margin: 0 0 10px;
+        }
+
+        .confirm-wrap p {
+            color: var(--steel);
+            font-size: 14px;
+            margin: 0 0 6px;
+        }
+
+        .order-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--accent-dark);
+            margin: 14px 0 26px;
+            letter-spacing: .03em;
+        }
+
+        .confirm-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        /* ===== FLOATING WA ===== */
+        .wa-float {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            z-index: 80;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--green);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 8px 20px rgba(47, 107, 58, .4);
+            font-size: 26px;
+        }
+
+        .wa-float:hover {
+            background: #245530;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            right: 22px;
+            z-index: 120;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 13px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-left: 4px solid var(--accent);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all .25s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        .grow {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- CART DRAWER -->
+    <aside class="drawer" id="cartDrawer" aria-label="Shopping cart">
+        <div class="drawer-head">
+            <h3>Your Cart</h3>
+            <button class="drawer-close" id="closeDrawer" aria-label="Close cart">&times;</button>
+        </div>
+        <div class="drawer-body" id="cartBody"></div>
+        <div class="drawer-foot" id="cartFoot"></div>
+    </aside>
+
+    <!-- HEADER -->
+    <header class="site">
+        <div class="wrap topbar">
+            <div class="logo" onclick="goHome()">
+                <div class="logo-badge">FG</div>
+                <div class="logo-text">
+                    <div class="name">FUZIO GORILLA</div>
+                    <div class="tag">TOUGHER THAN THE JOB</div>
+                </div>
+            </div>
+            <nav class="main-links">
+                <a onclick="goHome()">Home</a>
+                <a onclick="showSearch('')">Shop</a>
+                <a onclick="scrollFoot()">About</a>
+                <a onclick="scrollFoot()">Contact</a>
+            </nav>
+            <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.3-4.3" />
+                </svg>
+                <input id="searchInput" type="text" placeholder="What are you looking for?"
+                    onkeydown="if(event.key==='Enter')showSearch(this.value)">
+            </div>
+            <div class="head-actions">
+                <button class="icon-btn hamburger" aria-label="Menu" onclick="showSearch('')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M3 12h18M3 18h18" />
+                    </svg>
+                </button>
+                <button class="icon-btn" aria-label="Cart" onclick="openCart()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" />
+                    </svg>
+                    <span class="cart-count" id="cartCount" hidden>0</span>
+                </button>
+                <a class="btn wa small" href="#" onclick="waGeneral();return false;" style="display:flex;">Chat</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- ============ HOME VIEW ============ -->
+        <section id="view-home">
+            <div class="identity">
+                <h1>FUZIO <span>GORILLA</span></h1>
+                <p>Industrial Workwear &amp; Supplies</p>
+            </div>
+
+            <div class="section tight">
+                <div class="wrap">
+                    <div class="section-head">
+                        <div class="eyebrow">01 — Catalogue</div>
+                        <h2>Shop by Category</h2>
+                    </div>
+                    <div class="cat-grid" id="catGrid"></div>
+                </div>
+            </div>
+
+            <div class="section tight">
+                <div class="wrap">
+                    <div class="section-head">
+                        <div class="eyebrow">02 — Featured</div>
+                        <h2>Featured Products</h2>
+                    </div>
+                    <div class="prod-grid" id="featuredGrid"></div>
+                </div>
+            </div>
+
+            <div class="section tight">
+                <div class="wrap">
+                    <div class="section-head">
+                        <div class="eyebrow">03 — Why Us</div>
+                        <h2>Why Fuzio Gorilla?</h2>
+                    </div>
+                    <div class="why-grid">
+                        <div class="why-card">
+                            <div class="num">BUILT TO LAST</div>
+                            <h4>Durable by design</h4>
+                            <p>Products selected for demanding working environments, not desk jobs.</p>
+                        </div>
+                        <div class="why-card">
+                            <div class="num">BUILT FOR THE JOB</div>
+                            <h4>Practical, not fussy</h4>
+                            <p>Designed around real workplace needs — nothing you don't actually use.</p>
+                        </div>
+                        <div class="why-card">
+                            <div class="num">ONE PLACE</div>
+                            <h4>Workplace essentials</h4>
+                            <p>From workwear and PPE to cleaning, waste management and supplies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="industries">
+                <div class="wrap">
+                    <div class="section-head">
+                        <div class="eyebrow">04 — Industries</div>
+                        <h2>Workwear &amp; Safety For</h2>
+                    </div>
+                    <div class="ind-list" id="indList"></div>
+                </div>
+            </div>
+
+            <div class="wa-cta">
+                <div class="wrap">
+                    <h2>Prefer to order on WhatsApp?</h2>
+                    <p>Send us your list and we'll confirm pricing and delivery in minutes.</p>
+                    <button class="btn outline" style="border-color:var(--ink);" onclick="waGeneral()">Order on
+                        WhatsApp</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CATEGORY / SEARCH VIEW ============ -->
+        <section id="view-category" hidden>
+            <div class="cat-hero">
+                <div class="wrap">
+                    <div class="eyebrow" id="catEyebrow">Category</div>
+                    <h1 id="catTitle">Category name</h1>
+                    <p id="catDesc">Category description.</p>
+                </div>
+            </div>
+            <div class="section tight">
+                <div class="wrap">
+                    <div class="crumb"><a onclick="goHome()">Home</a><span class="sep">/</span><span
+                            id="catCrumb">Category</span></div>
+                    <div class="toolbar">
+                        <div class="count" id="catCount">0 products</div>
+                        <select class="sortsel" id="sortSel" onchange="renderProductGrid()">
+                            <option value="default">Sort: Featured</option>
+                            <option value="low">Price: Low to High</option>
+                            <option value="high">Price: High to Low</option>
+                        </select>
+                    </div>
+                    <div class="prod-grid" id="catProdGrid"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PRODUCT VIEW ============ -->
+        <section id="view-product" hidden>
+            <div class="section tight">
+                <div class="wrap">
+                    <div class="crumb">
+                        <a onclick="goHome()">Home</a><span class="sep">/</span>
+                        <a id="pdCatLink">Category</a><span class="sep">/</span>
+                        <span id="pdCrumb">Product</span>
+                    </div>
+                    <div class="product-view">
+                        <div>
+                            <div class="gallery-main" id="pdGalleryMain"></div>
+                            <div class="gallery-thumbs" id="pdThumbs"></div>
+                        </div>
+                        <div>
+                            <h1 class="pd-name" id="pdName"></h1>
+                            <div class="pd-price mono" id="pdPrice"></div>
+                            <div class="pd-stock" id="pdStock">✓ In Stock</div>
+                            <p class="pd-short" id="pdShort"></p>
+
+                            <div class="opt-block" id="sizeBlock" hidden>
+                                <span class="opt-label">Size</span>
+                                <div class="opt-row" id="sizeRow"></div>
+                            </div>
+                            <div class="opt-block" id="colorBlock" hidden>
+                                <span class="opt-label">Colour</span>
+                                <div class="opt-row" id="colorRow"></div>
+                            </div>
+                            <div class="opt-block">
+                                <span class="opt-label">Quantity</span>
+                                <div class="qty-row">
+                                    <button onclick="pdQty(-1)">−</button>
+                                    <span class="qval" id="pdQty">1</span>
+                                    <button onclick="pdQty(1)">+</button>
+                                </div>
+                            </div>
+
+                            <div class="pd-actions">
+                                <button class="btn full" onclick="addToCart(true)">Add to Cart</button>
+                                <button class="btn accent full" onclick="buyNow()">Buy Now</button>
+                                <button class="btn wa full" onclick="waProduct()">Order on WhatsApp</button>
+                            </div>
+
+                            <div class="specs">
+                                <h5>Specifications</h5>
+                                <table id="pdSpecs"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CHECKOUT VIEW ============ -->
+        <section id="view-checkout" hidden>
+            <div class="cat-hero" style="padding:22px 0;">
+                <div class="wrap">
+                    <div class="eyebrow">Checkout</div>
+                    <h1 style="font-size:26px;">Delivery &amp; Contact Details</h1>
+                </div>
+            </div>
+            <div class="section tight">
+                <div class="wrap checkout-grid">
+                    <div>
+                        <div class="field-row">
+                            <div class="field"><label>Full Name</label><input id="ckName" type="text"
+                                    placeholder="Jane Wanjiru"></div>
+                            <div class="field"><label>Phone Number</label><input id="ckPhone" type="tel"
+                                    placeholder="07XX XXX XXX"></div>
+                        </div>
+                        <div class="field"><label>Email Address</label><input id="ckEmail" type="email"
+                                placeholder="jane@example.com"></div>
+                        <div class="field-row">
+                            <div class="field"><label>County</label><input id="ckCounty" type="text"
+                                    placeholder="Nairobi"></div>
+                            <div class="field"><label>Town / City</label><input id="ckCity" type="text"
+                                    placeholder="Industrial Area"></div>
+                        </div>
+                        <div class="field"><label>Delivery Address</label><input id="ckAddress" type="text"
+                                placeholder="Street, building, landmark"></div>
+                        <div class="field"><label>Additional Order Notes (optional)</label><textarea id="ckNotes"
+                                rows="3" placeholder="Any special instructions"></textarea></div>
+                    </div>
+                    <div class="order-box">
+                        <h3>Order Summary</h3>
+                        <div id="ckLines"></div>
+                        <div class="sum-row" style="margin-top:14px;"><span>Subtotal</span><span class="mono"
+                                id="ckSubtotal"></span></div>
+                        <div class="sum-row"><span>Delivery</span><span class="mono" id="ckDelivery"></span></div>
+                        <div class="sum-row total"><span>Total</span><span id="ckTotal"></span></div>
+                        <button class="btn full" style="margin-top:18px;" onclick="submitOrder()">Place Order</button>
+                        <div style="font-size:11px;color:var(--steel);margin-top:10px;text-align:center;">Guest checkout
+                            — no account needed.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CONFIRMATION VIEW ============ -->
+        <section id="view-confirm" hidden>
+            <div class="confirm-wrap">
+                <div class="confirm-icon">✓</div>
+                <h1>Order Received</h1>
+                <p>Thank you for choosing Fuzio Gorilla.</p>
+                <p>Your order number is:</p>
+                <div class="order-num mono" id="orderNum">FG-000000</div>
+                <div class="confirm-actions">
+                    <button class="btn full" onclick="mockPay()">Pay Now</button>
+                    <button class="btn wa full" onclick="waConfirmOrder()">Confirm on WhatsApp</button>
+                    <button class="btn outline full" onclick="goHome()">Continue Shopping</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site" id="siteFooter">
+        <div class="wrap">
+            <div class="foot-grid">
+                <div class="foot-col">
+                    <h5>Fuzio Gorilla</h5>
+                    <p style="max-width:220px;">Industrial workwear &amp; supplies. Fuzio Gorilla Industries Ltd. —
+                        Kenya.</p>
+                    <p>Mon–Sat, 8:00–18:00 EAT</p>
+                </div>
+                <div class="foot-col">
+                    <h5>Quick Links</h5>
+                    <a onclick="goHome()">Home</a>
+                    <a onclick="showSearch('')">Shop</a>
+                    <a href="#">About</a>
+                    <a href="#">Contact</a>
+                </div>
+                <div class="foot-col">
+                    <h5>Categories</h5>
+                    <a onclick="openCategory('workwear')">Workwear</a>
+                    <a onclick="openCategory('ppe')">PPE &amp; Safety</a>
+                    <a onclick="openCategory('waste')">Waste Management</a>
+                    <a onclick="openCategory('cleaning')">Cleaning</a>
+                    <a onclick="openCategory('storage')">Storage</a>
+                </div>
+                <div class="foot-col">
+                    <h5>Support</h5>
+                    <a onclick="waGeneral()">WhatsApp</a>
+                    <a href="tel:+254700000000">+254 700 000 000</a>
+                    <a href="mailto:orders@fuziogorilla.co.ke">orders@fuziogorilla.co.ke</a>
+                    <a href="#">Delivery &amp; Returns</a>
+                </div>
+            </div>
+            <div class="foot-bottom">
+                <span>© 2026 Fuzio Gorilla Industries Ltd. All rights reserved.</span>
+                <span>Terms · Privacy Policy</span>
+            </div>
+        </div>
+    </footer>
+
+    <button class="wa-float" aria-label="Chat on WhatsApp" onclick="waGeneral()">🟢</button>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        /* =========================================================
+           CONFIG — edit these in the admin panel later
+        ========================================================= */
+        const WHATSAPP_NUMBER = "254700000000"; // E.164 without '+'
+        const DELIVERY_FEE = 300; // KES flat delivery fee for demo
+
+        /* =========================================================
+           DATA
+        ========================================================= */
+        const CATEGORIES = [
+            { id: "workwear", icon: "🦍", name: "Workwear", items: "Overalls, Trousers, Shirts, Jackets", desc: "Professional workwear built for demanding environments." },
+            { id: "ppe", icon: "🛡️", name: "PPE & Safety", items: "Helmets, Gloves, Shoes, Vests, Eye Protection", desc: "Certified personal protective equipment for every site." },
+            { id: "waste", icon: "🗑️", name: "Waste Management", items: "Garbage Bags, Dustbins, Wheelie Bins, Recycling Bins", desc: "Waste handling equipment for sites, offices and homes." },
+            { id: "cleaning", icon: "🧹", name: "Cleaning", items: "Mops, Brooms, Brushes, Buckets, Cloths", desc: "Everyday cleaning tools built to survive daily use." },
+            { id: "consumables", icon: "🧤", name: "Consumables", items: "Disposable Gloves, Masks, Wipes, Shoe Covers", desc: "Single-use essentials for hygiene and site safety." },
+            { id: "industrial", icon: "⚙️", name: "Industrial Supplies", items: "Cable Ties, Tapes, Workshop Supplies", desc: "General workshop and utility supplies for any job." },
+            { id: "sitesafety", icon: "🚧", name: "Site Safety", items: "Cones, Warning Signs, Barrier Tape, First Aid", desc: "Signage and equipment to keep sites safe and compliant." },
+            { id: "storage", icon: "📦", name: "Storage", items: "Toolboxes, Storage Bins, Crates, Shelving", desc: "Storage and organisation solutions for site, warehouse and workshop." },
+        ];
+
+        const PRODUCTS = [
+            // WORKWEAR
+            {
+                id: "ovr-01", cat: "workwear", icon: "🦍", name: "Fuzio Gorilla Industrial Overall", price: 2500, desc: "Heavy-duty poly-cotton overall for tough daily wear.",
+                sizes: ["S", "M", "L", "XL", "XXL", "XXXL"], colors: ["Navy", "Grey", "Black"],
+                specs: { "Material": "65% Polyester / 35% Cotton", "Weight": "280 gsm", "Closure": "Zip front + press studs", "Pockets": "6 utility pockets" }
+            },
+            {
+                id: "trs-01", cat: "workwear", icon: "🦍", name: "Cargo Work Trousers", price: 1800, desc: "Reinforced cargo trousers with knee-pad pockets.",
+                sizes: ["S", "M", "L", "XL", "XXL"], colors: ["Navy", "Khaki", "Black"],
+                specs: { "Material": "Ripstop cotton blend", "Pockets": "8, incl. knee-pad slots", "Waist": "Adjustable elastic + belt loops" }
+            },
+            {
+                id: "shr-01", cat: "workwear", icon: "🦍", name: "Hi-Vis Work Shirt", price: 1400, desc: "Breathable work shirt with reflective trim.",
+                sizes: ["S", "M", "L", "XL", "XXL"], colors: ["Orange", "Yellow"],
+                specs: { "Material": "Cotton-poly blend, 220 gsm", "Visibility": "Reflective tape, Class 2", "Fit": "Regular, vented back" }
+            },
+            {
+                id: "jkt-01", cat: "workwear", icon: "🦍", name: "Insulated Work Jacket", price: 3200, desc: "Weatherproof jacket for cold and wet conditions.",
+                sizes: ["M", "L", "XL", "XXL"], colors: ["Navy", "Black"],
+                specs: { "Shell": "Water-resistant polyester", "Lining": "Quilted thermal", "Closure": "Storm flap zip" }
+            },
+            // PPE
+            {
+                id: "hlm-01", cat: "ppe", icon: "🛡️", name: "Industrial Safety Helmet", price: 900, desc: "Impact-resistant helmet with adjustable ratchet.",
+                sizes: [], colors: ["White", "Yellow", "Orange", "Blue"],
+                specs: { "Standard": "EN397 compliant", "Shell": "High-density polyethylene", "Adjustment": "Ratchet, 53–63cm" }
+            },
+            {
+                id: "glv-01", cat: "ppe", icon: "🛡️", name: "Cut-Resistant Safety Gloves", price: 450, desc: "Level 5 cut resistance with textured grip palm.",
+                sizes: ["S", "M", "L", "XL"], colors: ["Grey"],
+                specs: { "Cut Level": "EN388 Level 5", "Coating": "Nitrile palm dip", "Pair count": "Sold per pair" }
+            },
+            {
+                id: "sho-01", cat: "ppe", icon: "🛡️", name: "Steel-Toe Safety Shoes", price: 3500, desc: "Steel toe-cap boots with anti-slip sole.",
+                sizes: ["40", "41", "42", "43", "44", "45"], colors: ["Black", "Brown"],
+                specs: { "Toe cap": "Steel, 200 joule rated", "Sole": "Anti-slip, oil resistant", "Standard": "EN ISO 20345" }
+            },
+            {
+                id: "vst-01", cat: "ppe", icon: "🛡️", name: "Reflective Safety Vest", price: 400, desc: "High-visibility vest with dual reflective bands.",
+                sizes: ["One Size"], colors: ["Orange", "Yellow"],
+                specs: { "Class": "Class 2 high-visibility", "Closure": "Velcro front", "Fit": "Adjustable, unisex" }
+            },
+            // WASTE MANAGEMENT
+            {
+                id: "bag-01", cat: "waste", icon: "🗑️", name: "Heavy-Duty Garbage Bags (Roll of 50)", price: 650, desc: "Puncture-resistant bags for industrial waste.",
+                sizes: ["Medium", "Large", "X-Large"], colors: ["Black"],
+                specs: { "Thickness": "Extra heavy gauge", "Pack size": "50 bags per roll", "Use": "Industrial & commercial waste" }
+            },
+            {
+                id: "bin-01", cat: "waste", icon: "🗑️", name: "Wheelie Bin 120L", price: 6500, desc: "Mobile wheelie bin with hinged lid.",
+                sizes: [], colors: ["Green", "Black", "Grey"],
+                specs: { "Capacity": "120 litres", "Build": "UV-stabilised HDPE", "Wheels": "2, fixed axle" }
+            },
+            {
+                id: "bin-02", cat: "waste", icon: "🗑️", name: "Pedal Bin 20L", price: 1600, desc: "Foot-pedal bin for offices and kitchens.",
+                sizes: [], colors: ["Silver", "Black", "White"],
+                specs: { "Capacity": "20 litres", "Material": "Stainless steel body", "Operation": "Foot pedal, soft-close lid" }
+            },
+            {
+                id: "bin-03", cat: "waste", icon: "🗑️", name: "Recycling Bin Set (3-way)", price: 5200, desc: "Colour-coded 3-compartment recycling station.",
+                sizes: [], colors: ["Multi"],
+                specs: { "Compartments": "3, colour coded", "Capacity": "3 x 40 litres", "Labels": "Paper / Plastic / General" }
+            },
+            // CLEANING
+            {
+                id: "mop-01", cat: "cleaning", icon: "🧹", name: "Industrial Cotton Mop", price: 550, desc: "Heavy absorbency mop for large floor areas.",
+                sizes: [], colors: ["White"],
+                specs: { "Head": "Cotton loop, 400g", "Handle": "1.4m aluminium", "Use": "Wet mopping, industrial floors" }
+            },
+            {
+                id: "brm-01", cat: "cleaning", icon: "🧹", name: "Heavy-Duty Push Broom", price: 850, desc: "Stiff-bristle broom for warehouses and yards.",
+                sizes: [], colors: ["Orange"],
+                specs: { "Width": "60cm sweep", "Bristle": "Stiff polypropylene", "Handle": "1.5m wood" }
+            },
+            {
+                id: "cls-01", cat: "cleaning", icon: "🧹", name: "Microfiber Cloth Pack (12)", price: 700, desc: "Lint-free cloths for general cleaning and detailing.",
+                sizes: [], colors: ["Assorted"],
+                specs: { "Pack size": "12 cloths", "Size": "40 x 40cm", "Material": "80/20 microfiber blend" }
+            },
+            {
+                id: "bkt-01", cat: "cleaning", icon: "🧹", name: "Cleaning Bucket with Wringer", price: 2200, desc: "Mop bucket with built-in wringer for fast cleanup.",
+                sizes: [], colors: ["Yellow", "Grey"],
+                specs: { "Capacity": "25 litres", "Wringer": "Side-press type", "Wheels": "4 castor wheels" }
+            },
+            // CONSUMABLES
+            {
+                id: "dgl-01", cat: "consumables", icon: "🧤", name: "Disposable Nitrile Gloves (Box of 100)", price: 1200, desc: "Powder-free gloves for hygiene and light-duty tasks.",
+                sizes: ["S", "M", "L", "XL"], colors: ["Blue"],
+                specs: { "Material": "Nitrile, powder-free", "Pack size": "100 gloves per box", "Use": "General & food-safe handling" }
+            },
+            {
+                id: "msk-01", cat: "consumables", icon: "🧤", name: "Disposable Face Masks (Box of 50)", price: 800, desc: "3-ply disposable masks for daily use.",
+                sizes: ["One Size"], colors: ["Blue", "White"],
+                specs: { "Layers": "3-ply non-woven", "Pack size": "50 masks per box", "Fit": "Ear-loop, adjustable nose clip" }
+            },
+            {
+                id: "cov-01", cat: "consumables", icon: "🧤", name: "Disposable Coveralls (Pack of 10)", price: 3800, desc: "Protective coveralls for hazardous or messy work.",
+                sizes: ["M", "L", "XL", "XXL"], colors: ["White"],
+                specs: { "Material": "Non-woven polypropylene", "Pack size": "10 coveralls", "Closure": "Zip front, elastic cuffs" }
+            },
+            {
+                id: "wip-01", cat: "consumables", icon: "🧤", name: "Industrial Wipes (Roll of 200)", price: 1500, desc: "Heavy-duty wipes for hands, tools and surfaces.",
+                sizes: [], colors: ["Blue"],
+                specs: { "Pack size": "200 sheets per roll", "Ply": "2-ply, low-lint", "Use": "Hands, tools, surfaces" }
+            },
+            // INDUSTRIAL SUPPLIES
+            {
+                id: "cbt-01", cat: "industrial", icon: "⚙️", name: "Cable Ties Pack (Assorted, 200pc)", price: 600, desc: "Assorted nylon cable ties for general use.",
+                sizes: [], colors: ["Black", "White"],
+                specs: { "Pack size": "200 pieces, mixed lengths", "Material": "Nylon 66", "Tensile": "Up to 22kg" }
+            },
+            {
+                id: "dtp-01", cat: "industrial", icon: "⚙️", name: "Duct Tape (Heavy-Duty, 48mm)", price: 450, desc: "Strong all-purpose tape for repairs and sealing.",
+                sizes: [], colors: ["Silver", "Black"],
+                specs: { "Width": "48mm x 25m roll", "Backing": "Cloth, water-resistant", "Use": "Sealing, bundling, repairs" }
+            },
+            {
+                id: "etp-01", cat: "industrial", icon: "⚙️", name: "Electrical Insulation Tape", price: 150, desc: "PVC tape for electrical insulation and bundling.",
+                sizes: [], colors: ["Black", "Red", "Blue"],
+                specs: { "Width": "18mm x 10m roll", "Rating": "600V insulation", "Material": "PVC" }
+            },
+            {
+                id: "blb-01", cat: "industrial", icon: "⚙️", name: "Utility Blades (Pack of 20)", price: 500, desc: "Sharp replacement blades for utility knives.",
+                sizes: [], colors: ["Steel"],
+                specs: { "Pack size": "20 blades", "Compatibility": "Standard snap-off knives", "Material": "Carbon steel" }
+            },
+            // SITE SAFETY
+            {
+                id: "con-01", cat: "sitesafety", icon: "🚧", name: "Safety Cone 70cm", price: 750, desc: "PVC traffic cone for site and road safety.",
+                sizes: [], colors: ["Orange"],
+                specs: { "Height": "70cm", "Material": "Flexible PVC", "Reflective band": "Yes, included" }
+            },
+            {
+                id: "tap-01", cat: "sitesafety", icon: "🚧", name: "Barrier Tape (Roll of 100m)", price: 400, desc: "Hazard barrier tape for restricting access.",
+                sizes: [], colors: ["Red/White", "Yellow/Black"],
+                specs: { "Length": "100m per roll", "Width": "75mm", "Material": "Non-adhesive PE" }
+            },
+            {
+                id: "sgn-01", cat: "sitesafety", icon: "🚧", name: "Warning Sign Board", price: 900, desc: "Durable warning signage for hazard areas.",
+                sizes: ["A3", "A2"], colors: ["Standard"],
+                specs: { "Material": "Rigid PVC board", "Mounting": "Pre-drilled holes", "Weather": "UV and rain resistant" }
+            },
+            {
+                id: "fak-01", cat: "sitesafety", icon: "🚧", name: "First Aid Kit (Site Standard)", price: 2800, desc: "Fully stocked first aid kit for workplace compliance.",
+                sizes: [], colors: ["Standard"],
+                specs: { "Case": "Wall-mountable, hard case", "Contents": "40+ compliant items", "Standard": "Workplace compliant kit" }
+            },
+            // STORAGE
+            {
+                id: "stg-01", cat: "storage", icon: "📦", name: "Heavy-Duty Toolbox", price: 2600, desc: "Lockable steel toolbox with tray insert.",
+                sizes: ["Medium", "Large"], colors: ["Red", "Black"],
+                specs: { "Material": "Powder-coated steel", "Lock": "Padlock hasp included", "Tray": "Removable top tray" }
+            },
+            {
+                id: "stg-02", cat: "storage", icon: "📦", name: "Stackable Storage Bin 50L", price: 1400, desc: "Durable stackable bin with clip-lock lid.",
+                sizes: ["30L", "50L", "80L"], colors: ["Black", "Grey"],
+                specs: { "Material": "High-density polyethylene", "Lid": "Clip-lock, weatherproof", "Stackable": "Yes, interlocking design" }
+            },
+            {
+                id: "stg-03", cat: "storage", icon: "📦", name: "Heavy-Duty Storage Crate", price: 1100, desc: "Ventilated crate for parts, tools and stock.",
+                sizes: ["Small", "Medium", "Large"], colors: ["Blue", "Black"],
+                specs: { "Material": "Reinforced polypropylene", "Handles": "Reinforced side grips", "Use": "Parts, tools, stock storage" }
+            },
+            {
+                id: "stg-04", cat: "storage", icon: "📦", name: "Boltless Shelving Unit (5-Tier)", price: 7500, desc: "Adjustable steel shelving for warehouse and store.",
+                sizes: [], colors: ["Grey"],
+                specs: { "Tiers": "5, adjustable height", "Load rating": "150kg per shelf", "Assembly": "Boltless, tool-free" }
+            },
+            {
+                id: "stg-05", cat: "storage", icon: "📦", name: "Lockable Storage Cabinet", price: 9800, desc: "Steel cabinet with shelving and lockable doors.",
+                sizes: [], colors: ["Grey", "Blue"],
+                specs: { "Material": "Powder-coated steel", "Shelves": "3, adjustable", "Security": "Lockable double doors" }
+            },
+        ];
+
+        const INDUSTRIES = ["Construction", "Automotive", "Solar & Electrical", "Manufacturing", "Agriculture", "Logistics", "Mining", "Oil & Gas", "Welding & Fabrication", "Utilities", "Marine & Ports", "Railway"];
+
+        /* =========================================================
+           STATE
+        ========================================================= */
+        let cart = []; // {pid, qty, size, color}
+        let currentProduct = null;
+        let currentCategory = null;
+        let currentSearch = null;
+        let pdQtyVal = 1;
+        let pdSize = null;
+        let pdColor = null;
+        let lastOrder = null;
+
+        /* =========================================================
+           HELPERS
+        ========================================================= */
+        function fmt(n) { return "KES " + n.toLocaleString("en-KE"); }
+        function findProduct(id) { return PRODUCTS.find(p => p.id === id); }
+        function findCategory(id) { return CATEGORIES.find(c => c.id === id); }
+        function catName(id) { const c = findCategory(id); return c ? c.name : id; }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+        }
+
+        function showView(id) {
+            ["view-home", "view-category", "view-product", "view-checkout", "view-confirm"].forEach(v => {
+                document.getElementById(v).hidden = (v !== id);
+            });
+            window.scrollTo({ top: 0, behavior: "instant" });
+        }
+
+        /* =========================================================
+           RENDER: HOME
+        ========================================================= */
+        function renderCatGrid() {
+            const grid = document.getElementById("catGrid");
+            grid.innerHTML = CATEGORIES.map(c => `
+    <button class="cat-card" onclick="openCategory('${c.id}')" style="text-align:left;border:1px solid var(--line);background:var(--paper);">
+      <div class="cat-visual">${c.icon}</div>
+      <div class="cat-body">
+        <h3>${c.name}</h3>
+        <p class="items">${c.items}</p>
+        <span class="shop-now">Shop Now →</span>
+      </div>
+    </button>
+  `).join("");
+        }
+
+        function renderFeatured() {
+            const grid = document.getElementById("featuredGrid");
+            const featured = ["ovr-01", "hlm-01", "bin-01", "dgl-01"].map(findProduct);
+            grid.innerHTML = featured.map(productCard).join("");
+        }
+
+        function renderIndustries() {
+            document.getElementById("indList").innerHTML = INDUSTRIES.map(i => `<span class="ind-pill">${i}</span>`).join("");
+        }
+
+        function productCard(p) {
+            return `
+    <div class="prod-card" onclick="openProduct('${p.id}')">
+      <div class="prod-visual">
+        <span class="stock-tag">In Stock</span>
+        ${p.icon}
+      </div>
+      <div class="prod-body">
+        <h4>${p.name}</h4>
+        <p class="desc">${p.desc}</p>
+        <div class="price mono">${fmt(p.price)}</div>
+        <button class="btn small full add-mini" onclick="event.stopPropagation(); quickAdd('${p.id}')">Add to Cart</button>
+      </div>
+    </div>`;
+        }
+
+        /* =========================================================
+           NAVIGATION
+        ========================================================= */
+        function goHome() {
+            currentCategory = null; currentSearch = null;
+            showView("view-home");
+        }
+
+        function openCategory(id) {
+            currentCategory = id; currentSearch = null;
+            const c = findCategory(id);
+            document.getElementById("catEyebrow").textContent = "Category";
+            document.getElementById("catTitle").textContent = c.name;
+            document.getElementById("catDesc").textContent = c.desc;
+            document.getElementById("catCrumb").textContent = c.name;
+            document.getElementById("sortSel").value = "default";
+            renderProductGrid();
+            showView("view-category");
+        }
+
+        function showSearch(term) {
+            term = (term || "").trim();
+            currentCategory = null;
+            currentSearch = term;
+            document.getElementById("catEyebrow").textContent = "Search";
+            document.getElementById("catTitle").textContent = term ? `Results for "${term}"` : "All Products";
+            document.getElementById("catDesc").textContent = term ? "Showing products matching your search." : "Browse everything Fuzio Gorilla stocks.";
+            document.getElementById("catCrumb").textContent = "Search";
+            document.getElementById("sortSel").value = "default";
+            renderProductGrid();
+            showView("view-category");
+        }
+
+        function renderProductGrid() {
+            let list;
+            if (currentSearch !== null) {
+                const t = currentSearch.toLowerCase();
+                list = t ? PRODUCTS.filter(p => p.name.toLowerCase().includes(t) || p.desc.toLowerCase().includes(t)) : PRODUCTS.slice();
+            } else {
+                list = PRODUCTS.filter(p => p.cat === currentCategory);
+            }
+            const sort = document.getElementById("sortSel").value;
+            if (sort === "low") list = list.slice().sort((a, b) => a.price - b.price);
+            if (sort === "high") list = list.slice().sort((a, b) => b.price - a.price);
+
+            document.getElementById("catCount").textContent = `${list.length} product${list.length === 1 ? "" : "s"}`;
+            document.getElementById("catProdGrid").innerHTML = list.length
+                ? list.map(productCard).join("")
+                : `<div style="grid-column:1/-1;padding:40px 0;text-align:center;color:var(--steel);">No products found. Try another search term.</div>`;
+        }
+
+        function openProduct(id) {
+            const p = findProduct(id);
+            currentProduct = p;
+            pdQtyVal = 1;
+            pdSize = p.sizes && p.sizes.length ? p.sizes[0] : null;
+            pdColor = p.colors && p.colors.length ? p.colors[0] : null;
+
+            document.getElementById("pdCatLink").textContent = catName(p.cat);
+            document.getElementById("pdCatLink").onclick = () => openCategory(p.cat);
+            document.getElementById("pdCrumb").textContent = p.name;
+            document.getElementById("pdGalleryMain").textContent = p.icon;
+            document.getElementById("pdThumbs").innerHTML = [1, 2, 3].map((n, i) => `<div class="${i === 0 ? 'active' : ''}">${p.icon}</div>`).join("");
+            document.getElementById("pdName").textContent = p.name;
+            document.getElementById("pdPrice").textContent = fmt(p.price);
+            document.getElementById("pdShort").textContent = p.desc;
+            document.getElementById("pdQty").textContent = pdQtyVal;
+
+            const sizeBlock = document.getElementById("sizeBlock");
+            const sizeRow = document.getElementById("sizeRow");
+            if (p.sizes && p.sizes.length) {
+                sizeBlock.hidden = false;
+                sizeRow.innerHTML = p.sizes.map(s => `<button class="opt-swatch ${s === pdSize ? 'active' : ''}" onclick="selectSize('${s}', this)">${s}</button>`).join("");
+            } else { sizeBlock.hidden = true; }
+
+            const colorBlock = document.getElementById("colorBlock");
+            const colorRow = document.getElementById("colorRow");
+            if (p.colors && p.colors.length) {
+                colorBlock.hidden = false;
+                colorRow.innerHTML = p.colors.map(c => `<button class="opt-swatch ${c === pdColor ? 'active' : ''}" onclick="selectColor('${c}', this)">${c}</button>`).join("");
+            } else { colorBlock.hidden = true; }
+
+            document.getElementById("pdSpecs").innerHTML = Object.entries(p.specs || {}).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+
+            showView("view-product");
+        }
+
+        function selectSize(s, el) {
+            pdSize = s;
+            document.querySelectorAll("#sizeRow .opt-swatch").forEach(b => b.classList.remove("active"));
+            el.classList.add("active");
+        }
+        function selectColor(c, el) {
+            pdColor = c;
+            document.querySelectorAll("#colorRow .opt-swatch").forEach(b => b.classList.remove("active"));
+            el.classList.add("active");
+        }
+        function pdQty(delta) {
+            pdQtyVal = Math.max(1, pdQtyVal + delta);
+            document.getElementById("pdQty").textContent = pdQtyVal;
+        }
+
+        /* =========================================================
+           CART
+        ========================================================= */
+        function addToCart(feedback) {
+            const p = currentProduct;
+            const existing = cart.find(l => l.pid === p.id && l.size === pdSize && l.color === pdColor);
+            if (existing) existing.qty += pdQtyVal;
+            else cart.push({ pid: p.id, qty: pdQtyVal, size: pdSize, color: pdColor });
+            updateCartUI();
+            if (feedback) { showToast(`Added ${p.name} to cart`); openCart(); }
+        }
+
+        function quickAdd(id) {
+            const p = findProduct(id);
+            const size = p.sizes && p.sizes.length ? p.sizes[0] : null;
+            const color = p.colors && p.colors.length ? p.colors[0] : null;
+            const existing = cart.find(l => l.pid === id && l.size === size && l.color === color);
+            if (existing) existing.qty += 1;
+            else cart.push({ pid: id, qty: 1, size, color });
+            updateCartUI();
+            showToast(`Added ${p.name} to cart`);
+        }
+
+        function buyNow() {
+            addToCart(false);
+            goToCheckout();
+        }
+
+        function cartTotals() {
+            let subtotal = 0;
+            cart.forEach(l => { const p = findProduct(l.pid); subtotal += p.price * l.qty; });
+            const delivery = cart.length ? DELIVERY_FEE : 0;
+            return { subtotal, delivery, total: subtotal + delivery };
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((s, l) => s + l.qty, 0);
+            const badge = document.getElementById("cartCount");
+            badge.hidden = count === 0;
+            badge.textContent = count;
+
+            const body = document.getElementById("cartBody");
+            const foot = document.getElementById("cartFoot");
+
+            if (!cart.length) {
+                body.innerHTML = `<div class="empty-cart">Your cart is empty.<br>Browse categories to get started.</div>`;
+                foot.innerHTML = "";
+                return;
+            }
+
+            body.innerHTML = cart.map((l, idx) => {
+                const p = findProduct(l.pid);
+                const metaParts = [];
+                if (l.size) metaParts.push(l.size);
+                if (l.color) metaParts.push(l.color);
+                return `
+      <div class="cart-line">
+        <div class="thumb">${p.icon}</div>
+        <div class="info">
+          <h6>${p.name}</h6>
+          <div class="meta">${metaParts.join(" · ") || "Standard"}</div>
+          <div class="row2">
+            <div class="mini-qty">
+              <button onclick="changeQty(${idx}, -1)">−</button>
+              <span>${l.qty}</span>
+              <button onclick="changeQty(${idx}, 1)">+</button>
+            </div>
+            <span class="line-price mono">${fmt(p.price * l.qty)}</span>
+          </div>
+          <button class="remove-link" onclick="removeLine(${idx})">Remove</button>
+        </div>
+      </div>`;
+            }).join("");
+
+            const t = cartTotals();
+            foot.innerHTML = `
+    <div class="sum-row"><span>Subtotal</span><span class="mono">${fmt(t.subtotal)}</span></div>
+    <div class="sum-row"><span>Delivery</span><span class="mono">${fmt(t.delivery)}</span></div>
+    <div class="sum-row total"><span>Total</span><span>${fmt(t.total)}</span></div>
+    <button class="btn full" onclick="goToCheckout()">Proceed to Checkout</button>
+    <button class="btn wa full" onclick="waFromCart()">Order on WhatsApp</button>
+  `;
+        }
+
+        function changeQty(idx, delta) {
+            cart[idx].qty += delta;
+            if (cart[idx].qty <= 0) cart.splice(idx, 1);
+            updateCartUI();
+        }
+        function removeLine(idx) { cart.splice(idx, 1); updateCartUI(); }
+
+        function openCart() {
+            document.getElementById("cartDrawer").classList.add("show");
+            document.getElementById("overlay").classList.add("show");
+        }
+        function closeCartFn() {
+            document.getElementById("cartDrawer").classList.remove("show");
+            document.getElementById("overlay").classList.remove("show");
+        }
+        document.getElementById("closeDrawer").onclick = closeCartFn;
+        document.getElementById("overlay").onclick = closeCartFn;
+
+        /* =========================================================
+           CHECKOUT
+        ========================================================= */
+        function goToCheckout() {
+            if (!cart.length) { showToast("Your cart is empty"); return; }
+            closeCartFn();
+            renderCheckout();
+            showView("view-checkout");
+        }
+
+        function renderCheckout() {
+            const lines = document.getElementById("ckLines");
+            lines.innerHTML = cart.map(l => {
+                const p = findProduct(l.pid);
+                const metaParts = [];
+                if (l.size) metaParts.push(l.size);
+                if (l.color) metaParts.push(l.color);
+                return `
+      <div class="oline">
+        <div>
+          <span class="nm">${p.name} × ${l.qty}</span>
+          <span class="meta">${metaParts.join(" · ") || "Standard"}</span>
+        </div>
+        <span class="mono">${fmt(p.price * l.qty)}</span>
+      </div>`;
+            }).join("");
+            const t = cartTotals();
+            document.getElementById("ckSubtotal").textContent = fmt(t.subtotal);
+            document.getElementById("ckDelivery").textContent = fmt(t.delivery);
+            document.getElementById("ckTotal").textContent = fmt(t.total);
+        }
+
+        function submitOrder() {
+            const name = document.getElementById("ckName").value.trim();
+            const phone = document.getElementById("ckPhone").value.trim();
+            const address = document.getElementById("ckAddress").value.trim();
+            if (!name || !phone || !address) {
+                showToast("Please fill in name, phone and delivery address");
+                return;
+            }
+            const orderNumber = "FG-" + Math.floor(100000 + Math.random() * 900000);
+            lastOrder = {
+                number: orderNumber,
+                name, phone,
+                email: document.getElementById("ckEmail").value.trim(),
+                county: document.getElementById("ckCounty").value.trim(),
+                city: document.getElementById("ckCity").value.trim(),
+                address, notes: document.getElementById("ckNotes").value.trim(),
+                lines: cart.map(l => ({ ...l })),
+                totals: cartTotals(),
+            };
+            document.getElementById("orderNum").textContent = lastOrder.number;
+            showView("view-confirm");
+        }
+
+        function mockPay() {
+            showToast("Payment gateway placeholder — integrate M-Pesa / card here");
+        }
+
+        /* =========================================================
+           WHATSAPP MESSAGE BUILDERS
+        ========================================================= */
+        function waLink(message) {
+            return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+        }
+
+        function waGeneral() {
+            const msg = "Hello Fuzio Gorilla, I'd like to ask about your products.";
+            window.open(waLink(msg), "_blank");
+        }
+
+        function waProduct() {
+            const p = currentProduct;
+            let msg = `Hello Fuzio Gorilla,\n\nI would like to place an order.\n\nProduct:\n${p.name}\n`;
+            if (pdSize) msg += `\nSize:\n${pdSize}\n`;
+            if (pdColor) msg += `\nColour:\n${pdColor}\n`;
+            msg += `\nQuantity:\n${pdQtyVal}\n\nTotal:\n${fmt(p.price * pdQtyVal)}\n\nPlease confirm my order and delivery details.`;
+            window.open(waLink(msg), "_blank");
+        }
+
+        function waFromCart() {
+            if (!cart.length) { showToast("Your cart is empty"); return; }
+            const t = cartTotals();
+            let msg = "Hello Fuzio Gorilla,\n\nI would like to place an order.\n\nProducts:\n";
+            cart.forEach(l => {
+                const p = findProduct(l.pid);
+                const opts = [l.size, l.color].filter(Boolean).join(", ");
+                msg += `- ${p.name}${opts ? " (" + opts + ")" : ""} x${l.qty} — ${fmt(p.price * l.qty)}\n`;
+            });
+            msg += `\nTotal:\n${fmt(t.total)}\n\nPlease confirm my order and delivery details.`;
+            window.open(waLink(msg), "_blank");
+        }
+
+        function waConfirmOrder() {
+            if (!lastOrder) return;
+            const o = lastOrder;
+            let msg = `Hello Fuzio Gorilla,\n\nI would like to place an order.\n\nOrder Number:\n${o.number}\n\nProducts:\n`;
+            o.lines.forEach(l => {
+                const p = findProduct(l.pid);
+                const opts = [l.size, l.color].filter(Boolean).join(", ");
+                msg += `- ${p.name}${opts ? " (" + opts + ")" : ""} x${l.qty}\n`;
+            });
+            msg += `\nTotal:\n${fmt(o.totals.total)}\n\nDelivery Location:\n${o.address}, ${o.city}, ${o.county}\n\nName: ${o.name}\nPhone: ${o.phone}\n\nPlease confirm my order and delivery details.`;
+            window.open(waLink(msg), "_blank");
+        }
+
+        function scrollFoot() { document.getElementById("siteFooter").scrollIntoView({ behavior: "smooth" }); }
+
+        /* =========================================================
+           INIT
+        ========================================================= */
+        renderCatGrid();
+        renderFeatured();
+        renderIndustries();
+        updateCartUI();
+    </script>
+
+</body>
+
+</html>
