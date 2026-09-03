@@ -23,5 +23,12 @@ class UserSerializer(serializers.Serializer):
         return instance
 
 class LoginSerializer(serializers.Serializer):
-    email=serializers.CharField()
+    email=serializers.EmailField()
     password=serializers.CharField()
+
+class ChangePasswordSerializer(serializers.Serializer):
+    email=serializers.EmailField()
+
+class VerifyCodeSerializer(serializers.Serializer):
+    email=serializers.EmailField()
+    code=serializers.CharField(min_length=6, max_length=6)
