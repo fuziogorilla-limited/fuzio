@@ -1,0 +1,54 @@
+Project fuzio{
+    database_type: 'postgreSQL'
+    description: "Ecommerce store"
+}
+
+Enum size{
+  xs
+  s
+  m
+  l
+  xl
+  xxl
+  xxxl
+}
+
+//admin
+
+Table customuser{
+    id int [pk]
+    first_name varchar(100) [not null]
+    last_name varchar(100) [not null]
+    email varchar [unique]
+    date_registered timestamp [default: `now()`]
+    date_updated date
+    token varchar() [null]
+    token_time date [null]
+    expiry date [null]
+    is_superuser bool [default: false]
+    is_staff bool [default: false]
+
+}
+
+Table product {
+    id int [pk, increment]
+    category_id int [not null, ref: > category.id]
+    name varchar(100) [not null]
+    description varchar(100) [not null]
+    price float [not null]
+    color varchar(100) [not null]
+    size size
+    quantity int [not null]
+    is_active bool [default: true]
+    date_added timestamp [default: `now()`]
+}
+
+Table category {
+    id int [pk, increment]
+    name varchar(100) [not null]
+    description varchar(100) [not null]
+    image varchar(255) [not null]
+    is_active bool [default: true]
+    date_added timestamp [default: `now()`]
+
+}

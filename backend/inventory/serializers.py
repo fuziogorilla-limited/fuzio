@@ -1,0 +1,32 @@
+from rest_framework.serializers import ModelSerializer
+from .models import Category, Product
+
+class CategorySerializer(ModelSerializer):
+    class Meta:
+        model=Category
+        fields="__all__"
+
+class ProductSerializer(ModelSerializer):
+    class Meta:
+        model=Product
+        fields="__all__"
+
+class PublicCategorySerializer(ModelSerializer):
+    class Meta:
+        model=Category
+        fields=[
+            "id",
+            "name",
+            "description",
+            "image",
+        ]
+
+class PublicProductSerializer(ModelSerializer):
+    class Meta:
+        model=Product
+        exclude=[
+            "quantity",
+            "date_added",
+            "buying_price",
+        ]
+        
