@@ -29,7 +29,12 @@ SECRET_KEY = 'django-insecure-1vm3&kxfr0$u%9uz_6*8ku1z9hh!9y@dpigvg=$wx12b@vrwqs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "fuzio.onrender.com",
+    "localhost",
+    "127.0.0.1"
+
+]
 
 
 # Application definition
