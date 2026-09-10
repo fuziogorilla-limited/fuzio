@@ -7,3 +7,4 @@ gunicorn==26.2.0
 pillow==12.3.0
 PyJWT==2.13.0
 sqlparse==0.6.0
+whitenoise==6.12.0
