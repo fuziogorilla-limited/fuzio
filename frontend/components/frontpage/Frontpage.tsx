@@ -2,38 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaArrowRight, FaWhatsapp } from "react-icons/fa";
+import { FaArrowRight, FaWhatsapp, FaBoxOpen, FaThLarge } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
+import apiFetch from "@/lib/api";
+import routes from "@/lib/routes";
 
-// ---------- Types ----------
+// ---------- Types (mirroring the Django serializers) ----------
 type Category = {
-  id: string;
-  icon: string;
+  id: number;
   name: string;
-  items: string;
-  desc: string;
+  description: string;
+  image: string | null;
 };
 
 type Product = {
-  id: string;
-  cat: string;
-  icon: string;
+  id: number;
+  category: number;
   name: string;
-  price: number;
-  desc: string;
+  description: string;
+  selling_price: string; // DRF DecimalField serializes as a string
+  color: string;
+  size: string;
+  is_active: boolean;
+  feature: boolean;
 };
-
-// ---------- Static content (not product data — swap for a CMS/backend later if needed) ----------
-const CATEGORIES: Category[] = [
-  { id: "workwear", icon: "🦍", name: "Workwear", items: "Overalls, Trousers, Shirts, Jackets", desc: "Professional workwear built for demanding environments." },
-  { id: "ppe", icon: "🛡️", name: "PPE & Safety", items: "Helmets, Gloves, Shoes, Vests, Eye Protection", desc: "Certified personal protective equipment for every site." },
-  { id: "waste", icon: "🗑️", name: "Waste Management", items: "Garbage Bags, Dustbins, Wheelie Bins, Recycling Bins", desc: "Waste handling equipment for sites, offices and homes." },
-  { id: "cleaning", icon: "🧹", name: "Cleaning", items: "Mops, Brooms, Brushes, Buckets, Cloths", desc: "Everyday cleaning tools built to survive daily use." },
-  { id: "consumables", icon: "🧤", name: "Consumables", items: "Disposable Gloves, Masks, Wipes, Shoe Covers", desc: "Single-use essentials for hygiene and site safety." },
-  { id: "industrial", icon: "⚙️", name: "Industrial Supplies", items: "Cable Ties, Tapes, Workshop Supplies", desc: "General workshop and utility supplies for any job." },
-  { id: "sitesafety", icon: "🚧", name: "Site Safety", items: "Cones, Warning Signs, Barrier Tape, First Aid", desc: "Signage and equipment to keep sites safe and compliant." },
-  { id: "storage", icon: "📦", name: "Storage", items: "Toolboxes, Storage Bins, Crates, Shelving", desc: "Storage and organisation solutions for site, warehouse and workshop." },
-];
 
 const INDUSTRIES = [
   "Construction", "Automotive", "Solar & Electrical", "Manufacturing", "Agriculture",
@@ -44,33 +36,51 @@ const WHATSAPP_NUMBER = "254700000000"; // E.164 without '+'
 function waLink(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
-function fmt(n: number) {
-  return "KES " + n.toLocaleString("en-KE");
+function fmt(price: string) {
+  return "KES " + Number(price).toLocaleString("en-KE");
+}
+function mediaUrl(path: string | null) {
+  if (!path) return null;
+  return path.startsWith("http") ? path : `${process.env.NEXT_PUBLIC_BACKEND_URL}${path}`;
 }
 
 export default function HomePage() {
   const { addToCart } = useCart();
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [catLoading, setCatLoading] = useState(true);
+  const [catError, setCatError] = useState(false);
+
   const [featured, setFeatured] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [prodLoading, setProdLoading] = useState(true);
+  const [prodError, setProdError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    // TODO: replace with your real backend URL
-    fetch("https://api.example.com/products?featured=true")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch featured products");
-        return res.json();
-      })
-      .then((data: Product[]) => {
-        if (!cancelled) setFeatured(data);
+
+    apiFetch<Category[]>(routes.inventory.publicCategories)
+      .then((data) => {
+        if (!cancelled) setCategories(data);
       })
       .catch(() => {
-        if (!cancelled) setError(true);
+        if (!cancelled) setCatError(true);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setCatLoading(false);
       });
+
+    apiFetch<Product[]>(routes.inventory.publicProducts)
+      .then((data) => {
+        if (cancelled) return;
+        setFeatured(data.filter((p) => p.feature && p.is_active).slice(0, 4));
+      })
+      .catch(() => {
+        if (!cancelled) setProdError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setProdLoading(false);
+      });
+
     return () => {
       cancelled = true;
     };
@@ -98,27 +108,53 @@ export default function HomePage() {
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">Shop by Category</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.map((c) => (
-              <Link
-                key={c.id}
-                href={`/category/${c.id}`}
-                className="group flex min-w-0 flex-col border border-ink/10 bg-paper transition-transform hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="relative flex h-[110px] items-center justify-center bg-ink text-4xl">
-                  {c.icon}
-                  <div className="absolute inset-x-0 bottom-0 h-[5px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_8px,var(--color-ink)_8px_16px)]" />
-                </div>
-                <div className="flex flex-1 flex-col p-4">
-                  <h3 className="mb-1.5 truncate text-base font-extrabold">{c.name}</h3>
-                  <p className="mb-4 text-xs leading-relaxed text-steel">{c.items}</p>
-                  <span className="mt-auto flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wide text-accent-dark group-hover:text-ink">
-                    Shop Now <FaArrowRight size={10} />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {catLoading && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-[220px] w-full animate-pulse border border-ink/10 bg-paper" />
+              ))}
+            </div>
+          )}
+
+          {!catLoading && catError && (
+            <p className="text-sm text-steel">Couldn&apos;t load categories right now. Please try again shortly.</p>
+          )}
+
+          {!catLoading && !catError && categories.length === 0 && (
+            <p className="text-sm text-steel">No categories available yet.</p>
+          )}
+
+          {!catLoading && !catError && categories.length > 0 && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {categories.map((c) => {
+                const img = mediaUrl(c.image);
+                return (
+                  <Link
+                    key={c.id}
+                    href={`/category/${c.id}`}
+                    className="group flex min-w-0 flex-col border border-ink/10 bg-paper transition-transform hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    <div className="relative flex h-[110px] items-center justify-center overflow-hidden bg-ink">
+                      {img ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={img} alt={c.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <FaThLarge className="text-4xl text-steel-light" />
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 h-[5px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_8px,var(--color-ink)_8px_16px)]" />
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <h3 className="mb-1.5 truncate text-base font-extrabold">{c.name}</h3>
+                      <p className="mb-4 line-clamp-2 text-xs leading-relaxed text-steel">{c.description}</p>
+                      <span className="mt-auto flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wide text-accent-dark group-hover:text-ink">
+                        Shop Now <FaArrowRight size={10} />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -132,7 +168,7 @@ export default function HomePage() {
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">Featured Products</h2>
           </div>
 
-          {loading && (
+          {prodLoading && (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="aspect-[3/4] w-full animate-pulse border border-ink/10 bg-paper" />
@@ -140,13 +176,17 @@ export default function HomePage() {
             </div>
           )}
 
-          {!loading && error && (
+          {!prodLoading && prodError && (
             <p className="text-sm text-steel">
               Couldn&apos;t load featured products right now. Please try again shortly.
             </p>
           )}
 
-          {!loading && !error && (
+          {!prodLoading && !prodError && featured.length === 0 && (
+            <p className="text-sm text-steel">No featured products yet.</p>
+          )}
+
+          {!prodLoading && !prodError && featured.length > 0 && (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {featured.map((p) => (
                 <div
@@ -154,22 +194,25 @@ export default function HomePage() {
                   className="flex min-w-0 flex-col border border-ink/10 bg-paper transition-transform hover:-translate-y-1 hover:shadow-lg"
                 >
                   <Link href={`/product/${p.id}`} className="block">
-                    <div className="relative flex aspect-square items-center justify-center bg-ink-2 text-3xl sm:text-4xl">
-                      <span className="absolute left-2 top-2 bg-paper px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wide text-green">
-                        In Stock
-                      </span>
-                      {p.icon}
+                    <div className="flex aspect-square items-center justify-center bg-ink-2">
+                      <FaBoxOpen className="text-3xl text-steel-light sm:text-4xl" />
                     </div>
                   </Link>
                   <div className="flex flex-1 flex-col p-3.5">
                     <Link href={`/product/${p.id}`} className="mb-1 line-clamp-2 text-sm font-bold leading-snug">
                       {p.name}
                     </Link>
-                    <p className="mb-2.5 line-clamp-2 text-[11px] leading-relaxed text-steel">{p.desc}</p>
-                    <div className="mt-auto font-mono text-[15px] font-bold">{fmt(p.price)}</div>
+                    <p className="mb-2.5 line-clamp-2 text-[11px] leading-relaxed text-steel">{p.description}</p>
+                    <div className="mt-auto font-mono text-[15px] font-bold">{fmt(p.selling_price)}</div>
                     <button
                       onClick={() =>
-                        addToCart({ pid: p.id, name: p.name, price: p.price, icon: p.icon, size: null, color: null })
+                        addToCart({
+                          pid: String(p.id),
+                          name: p.name,
+                          price: Number(p.selling_price),
+                          size: p.size || null,
+                          color: p.color || null,
+                        })
                       }
                       className="mt-2.5 w-full border-2 border-ink bg-ink py-2 text-[11px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:border-accent hover:text-ink"
                     >
