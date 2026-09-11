@@ -24,6 +24,4 @@ class Product(models.Model):
         return f"{self.name} description: {self.description}"
 
     def total_value(self):
-        amt=self.buying_price * self.quantity
-        return f"Total price: {amt}"
-    
+        return self.buying_price * self.quantity    

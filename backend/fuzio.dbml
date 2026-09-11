@@ -52,3 +52,22 @@ Table category {
     date_added timestamp [default: `now()`]
 
 }
+
+Table Cart{
+    cart_id varchar() [not null]
+    cart_items int [ref: < product.id]
+}
+
+Table Order{
+    first_name varchar(100) [not null]
+    last_name varchar(100) [not null]
+    phone_number varchar(20) [not null]
+    email varchar() [not null]
+    county varchar(100) [not null]
+    town varchar(100) [not null]
+    address varchar(100) [not null]
+    additional_information varchar() [null]
+
+    order_number varchar [not null]
+    cart_id varchar [not null]
+}

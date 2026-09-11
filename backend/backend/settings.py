@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     #apps
     'users',
     'inventory',
+    'orders',
 ]
 
 MIDDLEWARE = [
