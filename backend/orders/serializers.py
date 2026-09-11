@@ -1,8 +1,8 @@
-from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from .models import CartItem, Order
-from rest_framework import serializers
+from django.db import transaction
 from inventory.models import Product
+from .models import Cart, CartItem, Order, OrderItem
+
 
 class CreateCartItemSerializer(serializers.Serializer):
     product = serializers.PrimaryKeyRelatedField(
@@ -28,17 +28,59 @@ class CreateCartItemSerializer(serializers.Serializer):
             cart_item.save(update_fields=["quantity"])
 
         return cart_item
-    
-class OrderSerializer(ModelSerializer):
-    class Meta:
-        model=Order
-        fields="__all__"
 
-class CreateOrderSerializer(ModelSerializer):
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+
     class Meta:
-        model=Order
-        exclude=[
-            "id",
-            "order_number",
-            "created_at",
-        ]
+        model = OrderItem
+        fields = ["id", "product", "product_name", "quantity", "price"]
+        read_only_fields = ["price"]
+
+
+class CreateOrderItemSerializer(serializers.Serializer):
+    product = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.filter(is_active=True)
+    )
+    quantity = serializers.IntegerField(min_value=1)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+
+class CreateOrderSerializer(serializers.ModelSerializer):
+    items = CreateOrderItemSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Order
+        exclude = ["order_number", "created_at"]
+
+    def validate_items(self, value):
+        if not value:
+            raise serializers.ValidationError("Order must contain at least one item.")
+        return value
+
+    def create(self, validated_data):
+        items_data = validated_data.pop("items")
+
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)
+            OrderItem.objects.bulk_create(
+                [
+                    OrderItem(
+                        order=order,
+                        product=item["product"],
+                        quantity=item["quantity"],
+                        price=item["product"].selling_price,  # server-side price, never client-supplied
+                    )
+                    for item in items_data
+                ]
+            )
+
+        return order
