@@ -8,7 +8,6 @@ import {
   FaBoxOpen,
   FaShoppingBag,
   FaThLarge,
-  FaCog,
   FaSignOutAlt,
   FaBars,
   FaTimes,
@@ -19,7 +18,6 @@ const NAV_ITEMS = [
   { label: "Products", href: "/admin/products", icon: FaBoxOpen },
   { label: "Orders", href: "/admin/orders", icon: FaShoppingBag },
   { label: "Categories", href: "/admin/categories", icon: FaThLarge },
-  { label: "Settings", href: "/admin/settings", icon: FaCog },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setCheckingAuth(false);
       return;
     }
-    const token = localStorage.getItem("admin_token");
+    const token = localStorage.getItem("access_token");
     if (!token) {
       router.replace("/admin/login");
       return;

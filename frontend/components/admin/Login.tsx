@@ -11,11 +11,51 @@ import {
   FaSpinner,
   FaShieldAlt,
 } from "react-icons/fa";
-
-// TODO: replace with your real backend base URL
-const API_BASE = "https://api.example.com";
+import apiFetch from "@/lib/api";
+import routes from "@/lib/routes";
 
 type Step = "login" | "forgot-email" | "forgot-code";
+
+type LoginResponse = {
+  refresh: string;
+  access: string;
+};
+
+type ForgotPasswordResponse = {
+  message: string;
+};
+
+type VerifyCodeResponse = {
+  access: string;
+};
+
+type ApiErrorShape = {
+  status?: number;
+  data?: {
+    message?: string;
+    [key: string]: unknown;
+  } | null;
+};
+
+function extractErrorMessage(err: unknown, fallback: string): string {
+  const apiErr = err as ApiErrorShape;
+
+  if (apiErr && apiErr.data) {
+    if (typeof apiErr.data.message === "string") {
+      return apiErr.data.message;
+    }
+
+    // Fallback for raw DRF field errors, e.g. {"email": ["This field is required."]}
+    const firstKey = Object.keys(apiErr.data)[0];
+    if (firstKey) {
+      const val = apiErr.data[firstKey];
+      if (Array.isArray(val) && typeof val[0] === "string") return val[0];
+      if (typeof val === "string") return val;
+    }
+  }
+
+  return fallback;
+}
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -41,23 +81,26 @@ export default function AdminLoginPage() {
 
   const resetMessages = () => setError("");
 
+  const storeTokens = (access: string, refresh?: string) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("access_token", access);
+    if (refresh) localStorage.setItem("refresh_token", refresh);
+  };
+
   // ---------- Step 1: Login ----------
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     resetMessages();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/login`, {
+      const data = await apiFetch<LoginResponse>(routes.auth.login, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: { email, password },
       });
-      if (!res.ok) throw new Error("Invalid email or password");
-      const data = await res.json();
-      localStorage.setItem("admin_token", data.token);
+      storeTokens(data.access, data.refresh);
       router.push("/admin/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(extractErrorMessage(err, "Invalid email or password"));
     } finally {
       setLoading(false);
     }
@@ -69,16 +112,14 @@ export default function AdminLoginPage() {
     resetMessages();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/forgot-password`, {
+      await apiFetch<ForgotPasswordResponse>(routes.auth.forgotPassword, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail }),
+        body: { email: resetEmail },
       });
-      if (!res.ok) throw new Error("We couldn't find an account with that email.");
       setResendCooldown(30);
       setStep("forgot-code");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(extractErrorMessage(err, "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -89,15 +130,13 @@ export default function AdminLoginPage() {
     resetMessages();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/forgot-password`, {
+      await apiFetch<ForgotPasswordResponse>(routes.auth.forgotPassword, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail }),
+        body: { email: resetEmail },
       });
-      if (!res.ok) throw new Error("Couldn't resend the code. Please try again.");
       setResendCooldown(30);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(extractErrorMessage(err, "Couldn't resend the code. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -109,17 +148,14 @@ export default function AdminLoginPage() {
     resetMessages();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/verify-code`, {
+      const data = await apiFetch<VerifyCodeResponse>(routes.auth.verifyCode, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail, code }),
+        body: { email: resetEmail, code },
       });
-      if (!res.ok) throw new Error("That code is invalid or has expired.");
-      const data = await res.json();
-      localStorage.setItem("admin_token", data.token);
+      storeTokens(data.access);
       router.push("/admin/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(extractErrorMessage(err, "That code is invalid or has expired."));
     } finally {
       setLoading(false);
     }

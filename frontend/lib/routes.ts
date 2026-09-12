@@ -16,19 +16,23 @@ const routes = {
 
     orders: {
         create: "/api/orders/orders/",
-        detail: (orderNumber: string) =>
-            `/api/orders/orders/${orderNumber}/`,
+        detail: (orderNumber: string) => `/api/orders/orders/${orderNumber}/`,
+
+        // TODO (backend): none of these three exist yet.
+        // - adminList needs a GET handler on an admin-only view that returns all Orders.
+        // - adminUpdateStatus needs a `status` field added to the Order model + a PATCH handler.
+        // - adminStats needs a view that aggregates revenue / order counts / product counts.
+        adminList: "/api/orders/admin/orders/",
+        adminUpdateStatus: (id: number | string) => `/api/orders/admin/orders/${id}/`,
+        adminStats: "/api/orders/admin/stats/",
     },
 
     inventory: {
         categories: "/api/inventory/categories/",
         products: "/api/inventory/products/",
 
-        category: (id: number) =>
-            `/api/inventory/category/${id}/`,
-
-        product: (id: number) =>
-            `/api/inventory/product/${id}/`,
+        category: (id: number) => `/api/inventory/category/${id}/`,
+        product: (id: number) => `/api/inventory/product/${id}/`,
 
         publicCategories: "/api/inventory/pb/categories/",
         publicProducts: "/api/inventory/pb/products/",

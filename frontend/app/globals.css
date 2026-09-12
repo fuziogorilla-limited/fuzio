@@ -1,15 +1,27 @@
 @import "tailwindcss";
 
 @theme {
+
   --color-ink: #15140f;
+
   --color-ink-2: #211f18;
+
   --color-paper: #fbf9f4;
+
   --color-bg: #f1eee6;
-  --color-accent: #ff6a13;
-  --color-accent-dark: #c94e00;
+
+  --color-accent: #facc15;
+  /* yellow */
+
+  --color-accent-dark: #ca8a04;
+  /* darker yellow */
+
   --color-steel: #6e6c63;
+
   --color-steel-light: #a9a69a;
+
   --color-green: #2f6b3a;
 
   --font-mono: "JetBrains Mono", monospace;
+
 }

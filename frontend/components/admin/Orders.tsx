@@ -1,22 +1,51 @@
 "use client";
 
+/**
+ * BACKEND TODO — this component currently has nothing real to call:
+ *
+ * 1. There is no admin "list all orders" endpoint. `OrderApiView` only
+ *    defines `post()` (create order). You need a `get()` on an admin-only
+ *    view that returns all Orders (with their items), e.g. add a `get()`
+ *    to `OrderApiView` guarded by `IsAdminUser`, or a new
+ *    `AdminOrderListApiView`.
+ * 2. The `Order` model has no `status` field at all, so there's nothing to
+ *    filter or update here yet. Add something like:
+ *      status = models.CharField(max_length=20, choices=[...], default="pending")
+ *    plus a migration, then a PATCH endpoint to update it.
+ *
+ * Until those exist, this page will show a "couldn't load" state — that's
+ * expected, not a frontend bug. `routes.orders.adminList` /
+ * `routes.orders.adminUpdateStatus` in lib/routes.ts are placeholders for
+ * the URLs those new views should live at.
+ */
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FaEye } from "react-icons/fa";
-
-// TODO: replace with your real backend base URL
-const API_BASE = "https://api.example.com";
+import apiFetch from "@/lib/api";
+import routes from "@/lib/routes";
 
 type OrderStatus = "pending" | "processing" | "completed" | "cancelled";
 
+// Shape this component *wants* once the backend supports it. Adjust to
+// match whatever the real endpoint ends up returning.
+type OrderItem = {
+  id: number;
+  product: number;
+  product_name: string;
+  quantity: number;
+  price: string;
+};
+
 type Order = {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  phone: string;
-  total: number;
+  id: number;
+  order_number: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
   status: OrderStatus;
-  createdAt: string;
+  created_at: string;
+  items: OrderItem[];
 };
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "processing", "completed", "cancelled"];
@@ -36,30 +65,29 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function authHeaders(): HeadersInit {
-  const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+function orderTotal(order: Order) {
+  return order.items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 }
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/admin/orders`, { headers: authHeaders() })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load orders");
-        return res.json();
-      })
-      .then((data: Order[]) => {
+    apiFetch<Order[]>(routes.orders.adminList)
+      .then((data) => {
         if (!cancelled) setOrders(data);
       })
       .catch(() => {
-        if (!cancelled) setError(true);
+        if (!cancelled) {
+          setError(
+            "Couldn't load orders — this needs an admin order-list endpoint on the backend (see comment at top of Orders.tsx)."
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -74,20 +102,20 @@ export default function Orders() {
     [orders, statusFilter]
   );
 
-  const handleStatusChange = async (id: string, status: OrderStatus) => {
+  const handleStatusChange = async (id: number, status: OrderStatus) => {
     const prev = orders;
     setUpdatingId(id);
     setOrders((cur) => cur.map((o) => (o.id === id ? { ...o, status } : o)));
     try {
-      const res = await fetch(`${API_BASE}/admin/orders/${id}`, {
+      await apiFetch(routes.orders.adminUpdateStatus(id), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ status }),
+        body: { status },
       });
-      if (!res.ok) throw new Error("Update failed");
     } catch {
       setOrders(prev); // revert on failure
-      alert("Couldn't update order status. Please try again.");
+      alert(
+        "Couldn't update order status — this needs a `status` field and update endpoint on the backend Order model."
+      );
     } finally {
       setUpdatingId(null);
     }
@@ -114,7 +142,7 @@ export default function Orders() {
 
       {error && (
         <p className="mb-5 border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
-          Couldn&apos;t load orders right now. Please try again shortly.
+          {error}
         </p>
       )}
 
@@ -148,13 +176,15 @@ export default function Orders() {
                 {filtered.map((o) => (
                   <tr key={o.id} className="border-b border-ink/5 last:border-none hover:bg-bg">
                     <td className="whitespace-nowrap px-4 py-3 font-mono text-[12.5px] font-semibold sm:px-5">
-                      {o.orderNumber}
+                      {o.order_number}
                     </td>
                     <td className="px-4 py-3 sm:px-5">
-                      <div className="max-w-[160px] truncate font-semibold">{o.customerName}</div>
-                      <div className="truncate text-[11.5px] text-steel">{o.phone}</div>
+                      <div className="max-w-[160px] truncate font-semibold">
+                        {o.first_name} {o.last_name}
+                      </div>
+                      <div className="truncate text-[11.5px] text-steel">{o.phone_number}</div>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-steel sm:px-5">{fmtDate(o.createdAt)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-steel sm:px-5">{fmtDate(o.created_at)}</td>
                     <td className="px-4 py-3 sm:px-5">
                       <select
                         value={o.status}
@@ -170,12 +200,12 @@ export default function Orders() {
                       </select>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-semibold sm:px-5">
-                      {fmt(o.total)}
+                      {fmt(orderTotal(o))}
                     </td>
                     <td className="px-4 py-3 text-right sm:px-5">
                       <Link
-                        href={`/admin/orders/${o.id}`}
-                        aria-label={`View order ${o.orderNumber}`}
+                        href={`/admin/orders/${o.order_number}`}
+                        aria-label={`View order ${o.order_number}`}
                         className="inline-flex h-8 w-8 items-center justify-center border border-ink/15 text-steel hover:border-ink hover:text-ink"
                       >
                         <FaEye size={13} />

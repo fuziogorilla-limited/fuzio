@@ -10,6 +10,11 @@ import routes from "@/lib/routes";
 const WHATSAPP_NUMBER = "254700000000";
 const DELIVERY_FEE = 300; // keep in sync with CartDrawer
 
+// Shared field styling — matches the original .field input / .field textarea
+// rules (1.5px border, paper background, 13.5px text, border darkens on focus).
+const FIELD_CLASSES =
+  "w-full border-[1.5px] border-ink/15 bg-paper px-3.5 py-3 text-[13.5px] text-ink outline-none transition-colors placeholder:text-steel-light focus:border-ink";
+
 function fmt(n: number) {
   return "KES " + n.toLocaleString("en-KE");
 }
@@ -203,7 +208,7 @@ export default function CheckoutPage() {
                   onChange={setField("firstName")}
                   type="text"
                   placeholder="Jane"
-                  className="input"
+                  className={FIELD_CLASSES}
                 />
               </Field>
               <Field label="Last Name">
@@ -212,7 +217,7 @@ export default function CheckoutPage() {
                   onChange={setField("lastName")}
                   type="text"
                   placeholder="Wanjiru"
-                  className="input"
+                  className={FIELD_CLASSES}
                 />
               </Field>
             </div>
@@ -224,7 +229,7 @@ export default function CheckoutPage() {
                   onChange={setField("phone")}
                   type="tel"
                   placeholder="07XX XXX XXX"
-                  className="input"
+                  className={FIELD_CLASSES}
                 />
               </Field>
               <Field label="Email Address (optional)">
@@ -233,7 +238,7 @@ export default function CheckoutPage() {
                   onChange={setField("email")}
                   type="email"
                   placeholder="jane@example.com"
-                  className="input"
+                  className={FIELD_CLASSES}
                 />
               </Field>
             </div>
@@ -245,7 +250,7 @@ export default function CheckoutPage() {
                   onChange={setField("county")}
                   type="text"
                   placeholder="Nairobi"
-                  className="input"
+                  className={FIELD_CLASSES}
                 />
               </Field>
               <Field label="Town / City">
@@ -254,7 +259,7 @@ export default function CheckoutPage() {
                   onChange={setField("town")}
                   type="text"
                   placeholder="Industrial Area"
-                  className="input"
+                  className={FIELD_CLASSES}
                 />
               </Field>
             </div>
@@ -265,7 +270,7 @@ export default function CheckoutPage() {
                 onChange={setField("address")}
                 type="text"
                 placeholder="Street, building, landmark"
-                className="input"
+                className={FIELD_CLASSES}
               />
             </Field>
 
@@ -275,7 +280,7 @@ export default function CheckoutPage() {
                 onChange={setField("notes")}
                 rows={3}
                 placeholder="Any special instructions"
-                className="input resize-none"
+                className={`${FIELD_CLASSES} resize-none`}
               />
             </Field>
 
@@ -287,15 +292,18 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order summary */}
-          <div className="border border-ink/10 bg-paper p-5">
+          <div className="border border-ink/10 bg-paper p-[22px]">
             <h3 className="mb-4 text-[15px] font-extrabold">Order Summary</h3>
 
             {cart.map((l, idx) => {
               const meta = [l.size, l.color].filter(Boolean).join(" · ") || "Standard";
               return (
-                <div key={`${l.pid}-${idx}`} className="flex justify-between border-b border-ink/5 py-2 text-[12.5px]">
+                <div
+                  key={`${l.pid}-${idx}`}
+                  className="flex justify-between border-b border-ink/5 py-2 text-[12.5px]"
+                >
                   <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-ink">
                       {l.name} × {l.qty}
                     </span>
                     <span className="block text-[11px] text-steel">{meta}</span>
@@ -321,7 +329,7 @@ export default function CheckoutPage() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="mt-4.5 w-full border-2 border-ink bg-ink py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-[18px] w-full border-2 border-ink bg-ink py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? "Placing Order…" : "Place Order"}
             </button>
@@ -336,7 +344,9 @@ export default function CheckoutPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <label className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-wide">{label}</label>
+      <label className="mb-[7px] block text-[11.5px] font-bold uppercase tracking-[0.06em] text-ink">
+        {label}
+      </label>
       {children}
     </div>
   );
