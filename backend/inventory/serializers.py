@@ -25,7 +25,6 @@ class PublicProductSerializer(ModelSerializer):
     class Meta:
         model=Product
         exclude=[
-            "quantity",
             "date_added",
             "buying_price",
         ]
