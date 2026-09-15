@@ -6,10 +6,9 @@ import { useRouter } from "next/navigation";
 import { FaSearch, FaShoppingCart, FaBars, FaTimes, FaWhatsapp } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 
-const WHATSAPP_NUMBER = "254700000000"; // E.164 without '+'
+const WHATSAPP_NUMBER = "254798982870"; // E.164 without '+'
 const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Shop", href: "/shop" },
+  { label: "Shop", href: "/" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];

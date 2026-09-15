@@ -103,7 +103,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1240px]">
           <div className="mb-6">
             <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
-              01 — Catalogue
+              Catalogue
             </div>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">Shop by Category</h2>
           </div>
@@ -163,7 +163,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1240px]">
           <div className="mb-6">
             <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
-              02 — Featured
+              Featured
             </div>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">Featured Products</h2>
           </div>
@@ -231,7 +231,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1240px]">
           <div className="mb-6">
             <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
-              03 — Why Us
+              Why Us
             </div>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">Why Fuzio Gorilla?</h2>
           </div>
@@ -239,7 +239,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-px border border-ink/10 bg-ink/10 md:grid-cols-3">
             {[
               { tag: "BUILT TO LAST", title: "Durable by design", body: "Products selected for demanding working environments, not desk jobs." },
-              { tag: "BUILT FOR THE JOB", title: "Practical, not fussy", body: "Designed around real workplace needs — nothing you don't actually use." },
+              { tag: "BUILT FOR THE JOB", title: "Practical, not fussy", body: "Designed around real workplace needs, nothing you don't actually use." },
               { tag: "ONE PLACE", title: "Workplace essentials", body: "From workwear and PPE to cleaning, waste management and supplies." },
             ].map((w) => (
               <div key={w.tag} className="bg-paper p-6">
@@ -247,30 +247,6 @@ export default function HomePage() {
                 <h4 className="mt-2.5 mb-2 text-base font-extrabold">{w.title}</h4>
                 <p className="text-[13.5px] leading-relaxed text-steel">{w.body}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Industries */}
-      <section className="bg-ink-2 px-4 py-8 text-paper sm:px-6">
-        <div className="mx-auto max-w-[1240px]">
-          <div className="mb-6">
-            <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-              04 — Industries
-            </div>
-            <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-paper sm:text-3xl">
-              Workwear &amp; Safety For
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
-            {INDUSTRIES.map((i) => (
-              <span
-                key={i}
-                className="rounded-full border border-white/20 px-3.5 py-2 text-[12.5px] font-semibold text-steel-light"
-              >
-                {i}
-              </span>
             ))}
           </div>
         </div>

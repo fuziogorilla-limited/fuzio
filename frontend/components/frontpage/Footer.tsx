@@ -10,7 +10,7 @@ const FOOTER_CATEGORIES = [
   { id: "storage", name: "Storage" },
 ];
 
-const WHATSAPP_NUMBER = "254700000000"; // E.164 without '+'
+const WHATSAPP_NUMBER = "254798982870";
 const WHATSAPP_MESSAGE = "Hello Fuzio Gorilla, I'd like to ask about your products.";
 
 function waLink(message: string) {
@@ -28,7 +28,7 @@ export default function Footer() {
               Fuzio Gorilla
             </h5>
             <p className="max-w-[220px] break-words text-[13px] leading-relaxed mb-2">
-              Industrial workwear &amp; supplies. Fuzio Gorilla Industries Ltd. — Kenya.
+              Industrial workwear &amp; supplies. Fuzio Gorilla Industries Ltd. Kenya.
             </p>
             <p className="text-[13px] leading-relaxed">Mon–Sat, 8:00–18:00 EAT</p>
           </div>
@@ -87,10 +87,10 @@ export default function Footer() {
                 <FaWhatsapp className="shrink-0" /> WhatsApp
               </a>
               <a
-                href="tel:+254700000000"
+                href="tel:+254798982870"
                 className="flex items-center gap-2 hover:text-accent transition-colors"
               >
-                <FaPhoneAlt className="shrink-0 text-[11px]" /> +254 700 000 000
+                <FaPhoneAlt className="shrink-0 text-[11px]" /> +254 798 982 870
               </a>
               <a
                 href="mailto:orders@fuziogorilla.co.ke"
