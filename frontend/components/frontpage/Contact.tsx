@@ -12,9 +12,9 @@ import {
   FaCheck,
 } from "react-icons/fa";
 
-const WHATSAPP_NUMBER = "254700000000";
-const PHONE_NUMBER = "+254 700 000 000";
-const EMAIL = "hello@fuziogorilla.co.ke";
+const WHATSAPP_NUMBER = "254798982870";
+const PHONE_NUMBER = "+25498 982 870";
+const EMAIL = "info@fuziogorilla.co.ke";
 
 function waLink(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
