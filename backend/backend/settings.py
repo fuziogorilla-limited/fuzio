@@ -31,6 +31,8 @@ DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = [
     "fuzio.onrender.com",
+    "fuzio-3y0x.onrender.com",
+    "fuziogorilla.co.ke",
     "localhost",
     "127.0.0.1"
 ]
