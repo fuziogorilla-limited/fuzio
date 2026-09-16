@@ -25,16 +25,17 @@ export default function Header() {
   const runSearch = (term: string) => {
     const q = term.trim();
 
-    router.push(
-      q ? `/shop?q=${encodeURIComponent(q)}` : "/shop"
-    );
+    router.push(q ? `/shop?q=${encodeURIComponent(q)}` : "/shop");
 
     setMobileOpen(false);
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full overflow-x-hidden bg-ink text-paper">
-      <div className="mx-auto flex w-full max-w-[1240px] items-center gap-3 px-4 py-3.5 sm:gap-5 sm:px-6">
+    <header className="sticky top-0 z-50 h-[72px] w-full bg-ink text-paper">
+      {/* =========================================================
+          MAIN HEADER
+      ========================================================= */}
+      <div className="mx-auto flex h-full w-full max-w-[1240px] items-center gap-3 px-4 sm:gap-5 sm:px-6">
         {/* Logo */}
         <Link
           href="/"
@@ -55,7 +56,9 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Desktop navigation */}
+        {/* =========================================================
+            DESKTOP NAVIGATION
+        ========================================================= */}
         <nav className="ml-2 hidden shrink-0 gap-6 lg:flex">
           {NAV_LINKS.map((link) => (
             <Link
@@ -68,7 +71,9 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* Desktop search */}
+        {/* =========================================================
+            DESKTOP SEARCH
+        ========================================================= */}
         <div className="hidden min-w-0 max-w-[360px] flex-1 items-center gap-2 rounded-sm border border-white/15 bg-ink-2 px-3 lg:flex">
           <FaSearch className="shrink-0 text-[13px] opacity-60" />
 
@@ -86,22 +91,12 @@ export default function Header() {
           />
         </div>
 
-        {/* Actions */}
+        {/* =========================================================
+            ACTIONS
+        ========================================================= */}
         <div className="ml-auto flex shrink-0 items-center gap-2.5 sm:gap-3.5">
-          {/* Mobile menu */}
-          <button
-            type="button"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen((open) => !open)}
-            className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border border-white/20 transition-colors hover:border-accent lg:hidden"
-          >
-            {mobileOpen ? (
-              <FaTimes size={16} />
-            ) : (
-              <FaBars size={16} />
-            )}
-          </button>
+          {/* Mobile menu button */}
+
 
           {/* Cart */}
           <button
@@ -117,6 +112,19 @@ export default function Header() {
                 {cartCount}
               </span>
             )}
+          </button>
+          <button
+              type="button"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((open) => !open)}
+              className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border border-white/20 transition-colors hover:border-accent lg:hidden"
+            >
+              {mobileOpen ? (
+                <FaTimes size={16} />
+              ) : (
+                <FaBars size={16} />
+              )}
           </button>
 
           {/* WhatsApp */}
@@ -134,9 +142,13 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* =========================================================
+          MOBILE MENU
+          Positioned absolutely so it does NOT increase the
+          72px header height or push the page content downward.
+      ========================================================= */}
       {mobileOpen && (
-        <div className="w-full overflow-x-hidden border-t border-white/10 bg-ink-2 px-4 py-5 sm:px-6 lg:hidden">
+        <div className="absolute left-0 right-0 top-[72px] w-full border-t border-white/10 bg-ink-2 px-4 py-5 shadow-2xl sm:px-6 lg:hidden">
           {/* Mobile search */}
           <div className="mb-5 flex min-w-0 items-center gap-2 rounded-sm border border-white/15 bg-ink px-3">
             <FaSearch className="shrink-0 text-[13px] opacity-60" />

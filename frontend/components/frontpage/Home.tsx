@@ -8,7 +8,6 @@ import {
   FaBoxOpen,
   FaShieldAlt,
   FaTruck,
-  FaCheck,
 } from "react-icons/fa";
 
 import { useHomeData } from "@/hooks/useHomeData";
@@ -28,11 +27,7 @@ export default function Home() {
 
   return (
     <main className="w-full overflow-x-hidden bg-bg">
-      {/* =========================================================
-          HERO
-      ========================================================= */}
-      <section className="relative min-h-[100svh] overflow-hidden bg-ink text-paper">
-        {/* Background video */}
+      <section className="relative h-[calc(100dvh-72px)] w-full overflow-hidden bg-ink text-paper">
         <video
           autoPlay
           muted
@@ -44,14 +39,20 @@ export default function Home() {
           <source src="/ppe-optimized.mp4" type="video/mp4" />
         </video>
 
-        {/* Overlay */}
+        {/* =======================================================
+            OVERLAYS
+        ======================================================= */}
         <div className="absolute inset-0 bg-ink/65" />
+
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/40" />
 
-        {/* Content */}
-        <div className="relative z-10 flex min-h-[100svh] items-end px-4 py-8 sm:px-6 sm:py-10">
+        {/* =======================================================
+            HERO CONTENT
+        ======================================================= */}
+        <div className="relative z-10 flex h-full w-full items-end px-4 py-8 sm:px-6 sm:py-10">
           <div className="mx-auto w-full max-w-[1240px]">
             <div className="max-w-4xl">
+              {/* Brand label */}
               <div className="mb-4 flex items-center gap-3">
                 <span className="h-[2px] w-8 bg-accent" />
 
@@ -60,23 +61,27 @@ export default function Home() {
                 </span>
               </div>
 
-              <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
+              {/* Main heading */}
+              <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-tight md:text-5xl">
                 Built for work.
                 <br />
                 <span className="text-accent">Ready when you are.</span>
               </h1>
 
+              {/* Description */}
               <p className="mt-5 max-w-2xl text-sm leading-relaxed text-steel-light sm:text-base">
                 Workwear, PPE, cleaning supplies, waste management and
                 industrial essentials for businesses across Kenya.
               </p>
 
+              {/* Hero buttons */}
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/products"
                   className="group inline-flex items-center gap-2 bg-accent px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-paper"
                 >
                   Shop Products
+
                   <FaArrowRight
                     size={11}
                     className="transition-transform group-hover:translate-x-1"
@@ -96,25 +101,21 @@ export default function Home() {
                 </a>
               </div>
             </div>
-
-            <div className="mt-10 border-t border-white/15 pt-4">
-              <div className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-steel-light">
-                <span>Workwear</span>
-                <span>PPE</span>
-                <span>Industrial Supplies</span>
-                <span>Cleaning</span>
-                <span>Waste Management</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
+
+      {/* =========================================================
+          INDUSTRIAL STRIPE
+      ========================================================= */}
+      <div className="h-[7px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_12px,var(--color-ink)_12px_24px)]" />
 
       {/* =========================================================
           VALUE PROPOSITIONS
       ========================================================= */}
       <section className="border-b border-ink/10 bg-paper">
         <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-px bg-ink/10 sm:grid-cols-3">
+          {/* Workplace essentials */}
           <div className="bg-paper p-6 sm:p-7">
             <div className="mb-5 flex h-9 w-9 items-center justify-center bg-accent text-ink">
               <FaBoxOpen size={15} />
@@ -134,6 +135,7 @@ export default function Home() {
             </p>
           </div>
 
+          {/* Stock */}
           <div className="bg-paper p-6 sm:p-7">
             <div className="mb-5 flex h-9 w-9 items-center justify-center bg-accent text-ink">
               <FaShieldAlt size={15} />
@@ -153,6 +155,7 @@ export default function Home() {
             </p>
           </div>
 
+          {/* Delivery */}
           <div className="bg-paper p-6 sm:p-7">
             <div className="mb-5 flex h-9 w-9 items-center justify-center bg-accent text-ink">
               <FaTruck size={15} />
@@ -179,6 +182,7 @@ export default function Home() {
       ========================================================= */}
       <section className="px-4 py-14 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-[1240px]">
+          {/* Section heading */}
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
@@ -195,6 +199,7 @@ export default function Home() {
               className="group inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-ink"
             >
               View all categories
+
               <FaArrowRight
                 size={10}
                 className="transition-transform group-hover:translate-x-1"
@@ -202,6 +207,7 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* Category content */}
           {catLoading ? (
             <div className="grid gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
@@ -225,9 +231,10 @@ export default function Home() {
                 return (
                   <Link
                     key={category.id}
-                    href={`/categories/${category.id}`}
+                    href={`/category/${category.id}`}
                     className="group relative min-h-56 overflow-hidden bg-ink"
                   >
+                    {/* Category image */}
                     {image && (
                       <Image
                         src={image}
@@ -238,10 +245,14 @@ export default function Home() {
                       />
                     )}
 
+                    {/* Category overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
 
+                    {/* Category information */}
                     <div className="absolute inset-x-0 bottom-0 p-5 text-paper">
-                      <h3 className="text-lg font-black">{category.name}</h3>
+                      <h3 className="text-lg font-black">
+                        {category.name}
+                      </h3>
 
                       {category.description && (
                         <p className="mt-1 line-clamp-2 text-[12px] text-steel-light">
@@ -267,6 +278,7 @@ export default function Home() {
       ========================================================= */}
       <section className="bg-ink-2 px-4 py-14 text-paper sm:px-6 sm:py-20">
         <div className="mx-auto max-w-[1240px]">
+          {/* Section heading */}
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
@@ -283,6 +295,7 @@ export default function Home() {
               className="group inline-flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-paper"
             >
               View all products
+
               <FaArrowRight
                 size={10}
                 className="transition-transform group-hover:translate-x-1"
@@ -290,6 +303,7 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* Product content */}
           {prodLoading ? (
             <div className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
@@ -316,16 +330,17 @@ export default function Home() {
               {featured.map((product: Product) => (
                 <Link
                   key={product.id}
-                  href={`/products/${product.id}`}
+                  href={`/product/${product.id}`}
                   className="group bg-ink-2"
                 >
+                  {/* Product image */}
                   <div className="relative aspect-square overflow-hidden bg-paper">
-                    {/* Replace with your actual product image field if available */}
                     <div className="absolute inset-0 flex items-center justify-center text-ink/20">
                       <FaBoxOpen size={50} />
                     </div>
                   </div>
 
+                  {/* Product information */}
                   <div className="p-5">
                     <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-accent">
                       Featured
@@ -341,6 +356,7 @@ export default function Home() {
 
                     <div className="mt-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-steel-light transition-colors group-hover:text-accent">
                       View product
+
                       <FaArrowRight
                         size={9}
                         className="transition-transform group-hover:translate-x-1"
@@ -360,6 +376,7 @@ export default function Home() {
       <section className="px-4 py-14 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-[1240px]">
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+            {/* Heading */}
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
                 Why Fuzio Gorilla
@@ -370,6 +387,7 @@ export default function Home() {
               </h2>
             </div>
 
+            {/* Reasons */}
             <div className="grid gap-px bg-ink/10 sm:grid-cols-3">
               {WHY_US.map((item) => (
                 <div key={item.tag} className="bg-paper p-6">
@@ -408,12 +426,14 @@ export default function Home() {
             Browse our products or speak directly with us about what you need.
           </p>
 
+          {/* CTA buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/products"
               className="group inline-flex items-center gap-2 border-2 border-ink bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-paper hover:text-ink"
             >
               Shop Products
+
               <FaArrowRight
                 size={11}
                 className="transition-transform group-hover:translate-x-1"
@@ -435,7 +455,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Industrial stripe */}
+      {/* =========================================================
+          INDUSTRIAL STRIPE
+      ========================================================= */}
       <div className="h-[7px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_12px,var(--color-ink)_12px_24px)]" />
     </main>
   );
