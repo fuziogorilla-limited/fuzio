@@ -1,59 +1,10 @@
 import Link from "next/link";
-import {
-  FaWhatsapp,
-  FaTruck,
-  FaWarehouse,
-  FaHandshake,
-  FaBoxOpen,
-  FaCheck,
-  FaArrowRight,
-} from "react-icons/fa";
+import { FaArrowRight, FaCheck, FaWhatsapp } from "react-icons/fa";
 
-const INDUSTRIES = [
-  "Construction",
-  "Automotive",
-  "Solar & Electrical",
-  "Manufacturing",
-  "Agriculture",
-  "Logistics",
-  "Mining",
-  "Oil & Gas",
-  "Welding & Fabrication",
-  "Utilities",
-  "Marine & Ports",
-  "Railway",
-];
+import { BRAND_VALUES, INDUSTRIES, PROCESS, STORY_STEPS } from "@/constants/about";
+import { waLink } from "@/lib/utils";
 
-const PROCESS = [
-  {
-    icon: FaHandshake,
-    title: "Source",
-    body: "We work directly with manufacturers and certified suppliers, not middlemen, so pricing stays honest and quality stays consistent.",
-  },
-  {
-    icon: FaWarehouse,
-    title: "Stock",
-    body: "Core items are held in our Nairobi warehouse so common sizes and quantities are ready to ship the same day.",
-  },
-  {
-    icon: FaBoxOpen,
-    title: "Supply",
-    body: "Order online, on WhatsApp, or by phone. A real person confirms pricing and availability before anything ships.",
-  },
-  {
-    icon: FaTruck,
-    title: "Deliver",
-    body: "We deliver across Nairobi and dispatch countrywide via trusted couriers, with delivery cost confirmed upfront.",
-  },
-];
-
-const WHATSAPP_NUMBER = "254700000000";
-
-function waLink(message: string) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-}
-
-export default function AboutPage() {
+export default function About() {
   return (
     <main className="w-full overflow-x-hidden bg-bg">
       {/* =========================================================
@@ -99,7 +50,6 @@ export default function AboutPage() {
       ========================================================= */}
       <section className="px-4 py-14 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-[1240px]">
-          {/* Section heading */}
           <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
@@ -128,61 +78,32 @@ export default function AboutPage() {
           {/* Story timeline */}
           <div className="mt-14 border-t border-ink/10">
             <div className="grid divide-y divide-ink/10 lg:grid-cols-3 lg:divide-x lg:divide-y-0">
-              {/* Step 01 */}
-              <div className="relative px-0 py-7 lg:px-8 lg:py-9 lg:pl-0">
-                <div className="font-mono text-[11px] font-bold tracking-[0.12em] text-accent-dark">
-                  THE PROBLEM
+              {STORY_STEPS.map((step, index) => (
+                <div
+                  key={step.label}
+                  className={[
+                    "relative px-0 py-7 lg:py-9",
+                    index === 0 ? "lg:pl-0 lg:pr-8" : "lg:px-8",
+                    index === STORY_STEPS.length - 1 ? "lg:pr-0" : "",
+                  ].join(" ")}
+                >
+                  <div className="font-mono text-[11px] font-bold tracking-[0.12em] text-accent-dark">
+                    {step.label}
+                  </div>
+
+                  <h3 className="mt-3 text-lg font-extrabold tracking-tight">
+                    {step.title}
+                  </h3>
+
+                  <p className="mt-3 text-[13.5px] leading-relaxed text-steel">
+                    {step.body}
+                  </p>
                 </div>
-
-                <h3 className="mt-3 text-lg font-extrabold tracking-tight">
-                  Too many suppliers.
-                </h3>
-
-                <p className="mt-3 text-[13.5px] leading-relaxed text-steel">
-                  Overalls from one supplier. Gloves from another. Bin liners,
-                  signage, tools and safety equipment somewhere else. Different
-                  prices, different delivery dates and too much time wasted
-                  coordinating it all.
-                </p>
-              </div>
-
-              {/* Step 02 */}
-              <div className="relative px-0 py-7 lg:px-8 lg:py-9">
-                <div className="font-mono text-[11px] font-bold tracking-[0.12em] text-accent-dark">
-                  THE IDEA
-                </div>
-
-                <h3 className="mt-3 text-lg font-extrabold tracking-tight">
-                  Put the essentials together.
-                </h3>
-
-                <p className="mt-3 text-[13.5px] leading-relaxed text-steel">
-                  We built a single source for the everyday products that
-                  businesses actually use, selected for durability,
-                  availability and value rather than appearance.
-                </p>
-              </div>
-
-              {/* Step 03 */}
-              <div className="relative px-0 py-7 lg:px-8 lg:py-9 lg:pr-0">
-                <div className="font-mono text-[11px] font-bold tracking-[0.12em] text-accent-dark">
-                  TODAY
-                </div>
-
-                <h3 className="mt-3 text-lg font-extrabold tracking-tight">
-                  Supply without the headache.
-                </h3>
-
-                <p className="mt-3 text-[13.5px] leading-relaxed text-steel">
-                  Today, customers can browse online, order through WhatsApp
-                  or speak directly with our team. We confirm availability,
-                  pricing and delivery before the order moves.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Brand statement */}
+          {/* What we believe */}
           <div className="mt-10 grid gap-0 border border-ink/10 lg:grid-cols-[1fr_1.5fr]">
             <div className="bg-ink p-7 text-paper sm:p-9">
               <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
@@ -202,11 +123,7 @@ export default function AboutPage() {
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {[
-                  "Durable products",
-                  "Straightforward pricing",
-                  "Reliable supply",
-                ].map((item) => (
+                {BRAND_VALUES.map((item) => (
                   <div
                     key={item}
                     className="flex items-center gap-2 text-[12px] font-bold text-steel"
@@ -214,6 +131,7 @@ export default function AboutPage() {
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center bg-accent text-ink">
                       <FaCheck size={9} />
                     </span>
+
                     {item}
                   </div>
                 ))}
@@ -246,34 +164,37 @@ export default function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-px border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-            {PROCESS.map((step, i) => (
-              <div
-                key={step.title}
-                className="group bg-ink-2 p-6 transition-colors hover:bg-ink"
-              >
-                <div className="flex items-center justify-between">
+            {PROCESS.map((step) => {
+              const Icon = step.icon;
 
-                  <step.icon
-                    size={17}
-                    className="text-accent transition-transform group-hover:scale-110"
-                  />
+              return (
+                <div
+                  key={step.title}
+                  className="group bg-ink-2 p-6 transition-colors hover:bg-ink"
+                >
+                  <div className="flex items-center justify-between">
+                    <Icon
+                      size={17}
+                      className="text-accent transition-transform group-hover:scale-110"
+                    />
+                  </div>
+
+                  <h4 className="mb-2 mt-8 text-[15px] font-extrabold text-paper">
+                    {step.title}
+                  </h4>
+
+                  <p className="text-[13px] leading-relaxed text-steel-light">
+                    {step.body}
+                  </p>
                 </div>
-
-                <h4 className="mb-2 mt-8 text-[15px] font-extrabold text-paper">
-                  {step.title}
-                </h4>
-
-                <p className="text-[13px] leading-relaxed text-steel-light">
-                  {step.body}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* =========================================================
-          INDUSTRIES
+          INDUSTRIES WE SERVE
       ========================================================= */}
       <section className="px-4 py-14 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-[1240px]">
@@ -344,6 +265,7 @@ export default function AboutPage() {
               className="group inline-flex items-center gap-2 border-2 border-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide transition-colors hover:bg-ink hover:text-paper"
             >
               Contact Details
+
               <FaArrowRight
                 size={11}
                 className="transition-transform group-hover:translate-x-1"
@@ -352,6 +274,9 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Bottom industrial stripe */}
+      <div className="h-[7px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_12px,var(--color-ink)_12px_24px)]" />
     </main>
   );
 }

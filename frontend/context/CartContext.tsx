@@ -1,92 +1,168 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
-export type CartLine = {
-  pid: string;
-  name: string;
-  price: number;
-  icon?: string; // emoji/icon placeholder until real product images are wired up
-  qty: number;
-  size?: string | null;
-  color?: string | null;
-};
+import type { AddToCartInput, CartLine } from "@/types/cart";
 
 type CartContextValue = {
   cart: CartLine[];
+
   cartCount: number;
+
   subtotal: number;
+
   isCartOpen: boolean;
+
   openCart: () => void;
+
   closeCart: () => void;
-  addToCart: (line: Omit<CartLine, "qty"> & { qty?: number }) => void;
+
+  addToCart: (line: AddToCartInput) => void;
+
   changeQty: (index: number, delta: number) => void;
+
   removeLine: (index: number) => void;
+
   clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const addToCart: CartContextValue["addToCart"] = (line) => {
+  const addToCart = (line: AddToCartInput) => {
     const qty = line.qty ?? 1;
-    setCart((prev) => {
-      const existingIdx = prev.findIndex(
-        (l) => l.pid === line.pid && l.size === line.size && l.color === line.color
+
+    setCart((previousCart) => {
+      const existingIndex = previousCart.findIndex(
+        (item) =>
+          item.pid === line.pid &&
+          item.size === line.size &&
+          item.color === line.color
       );
-      if (existingIdx !== -1) {
-        const next = [...prev];
-        next[existingIdx] = { ...next[existingIdx], qty: next[existingIdx].qty + qty };
-        return next;
+
+      if (existingIndex !== -1) {
+        const nextCart = [...previousCart];
+
+        nextCart[existingIndex] = {
+          ...nextCart[existingIndex],
+          qty: nextCart[existingIndex].qty + qty,
+        };
+
+        return nextCart;
       }
-      return [...prev, { ...line, qty }];
+
+      return [
+        ...previousCart,
+        {
+          ...line,
+          qty,
+        },
+      ];
     });
   };
 
-  const changeQty: CartContextValue["changeQty"] = (index, delta) => {
-    setCart((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], qty: next[index].qty + delta };
-      return next.filter((l) => l.qty > 0);
+  const changeQty = (index: number, delta: number) => {
+    setCart((previousCart) => {
+      const nextCart = [...previousCart];
+
+      if (!nextCart[index]) {
+        return previousCart;
+      }
+
+      nextCart[index] = {
+        ...nextCart[index],
+        qty: nextCart[index].qty + delta,
+      };
+
+      return nextCart.filter((item) => item.qty > 0);
     });
   };
 
-  const removeLine: CartContextValue["removeLine"] = (index) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
+  const removeLine = (index: number) => {
+    setCart((previousCart) =>
+      previousCart.filter((_, itemIndex) => itemIndex !== index)
+    );
   };
 
-  const clearCart = () => setCart([]);
-  const openCart = () => setIsCartOpen(true);
-  const closeCart = () => setIsCartOpen(false);
+  const clearCart = () => {
+    setCart([]);
+  };
 
-  const cartCount = useMemo(() => cart.reduce((sum, l) => sum + l.qty, 0), [cart]);
-  const subtotal = useMemo(() => cart.reduce((sum, l) => sum + l.price * l.qty, 0), [cart]);
+  const openCart = () => {
+    setIsCartOpen(true);
+  };
+
+  const closeCart = () => {
+    setIsCartOpen(false);
+  };
+
+  const cartCount = useMemo(
+    () =>
+      cart.reduce(
+        (total, item) => total + item.qty,
+        0
+      ),
+    [cart]
+  );
+
+  const subtotal = useMemo(
+    () =>
+      cart.reduce(
+        (total, item) => total + item.price * item.qty,
+        0
+      ),
+    [cart]
+  );
+
+  const value = useMemo<CartContextValue>(
+    () => ({
+      cart,
+      cartCount,
+      subtotal,
+      isCartOpen,
+      openCart,
+      closeCart,
+      addToCart,
+      changeQty,
+      removeLine,
+      clearCart,
+    }),
+    [
+      cart,
+      cartCount,
+      subtotal,
+      isCartOpen,
+    ]
+  );
 
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        cartCount,
-        subtotal,
-        isCartOpen,
-        openCart,
-        closeCart,
-        addToCart,
-        changeQty,
-        removeLine,
-        clearCart,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
 }
 
 export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used within a CartProvider");
-  return ctx;
+  const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error(
+      "useCart must be used within a CartProvider"
+    );
+  }
+
+  return context;
 }
