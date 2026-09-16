@@ -5,9 +5,7 @@ from .models import Cart, CartItem, Order, OrderItem
 
 
 class CreateCartItemSerializer(serializers.Serializer):
-    product = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.filter(is_active=True)
-    )
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.filter(is_active=True))
     quantity = serializers.IntegerField(min_value=1)
 
     def create(self, validated_data):
@@ -26,7 +24,6 @@ class CreateCartItemSerializer(serializers.Serializer):
         if not created:
             cart_item.quantity += validated_data["quantity"]
             cart_item.save(update_fields=["quantity"])
-
         return cart_item
 
 
@@ -40,9 +37,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class CreateOrderItemSerializer(serializers.Serializer):
-    product = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.filter(is_active=True)
-    )
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.filter(is_active=True))
     quantity = serializers.IntegerField(min_value=1)
 
 
@@ -59,7 +54,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        exclude = ["order_number", "created_at"]
+        exclude = ["order_number", "created_at", "is_delivered"]
 
     def validate_items(self, value):
         if not value:
@@ -84,3 +79,17 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             )
 
         return order
+
+
+class ListOrdersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Order
+        fields="__all__"
+
+class OrderUpdate(serializers.Serializer):
+    is_delivered=serializers.BooleanField()
+
+    def update(self, instance, validated_data):
+        instance.is_delivered=validated_data["is_delivered"]
+        instance.save(update_fields=["is_delivered"])
+        return instance

@@ -8,6 +8,8 @@ from .serializers import (
     CreateCartItemSerializer,
     CreateOrderSerializer,
     OrderSerializer,
+    ListOrdersSerializer,
+    OrderUpdate,
 )
 
 
@@ -33,15 +35,9 @@ class CartItemApiView(APIView):
 
     def post(self, request, cart_id):
         cart = get_object_or_404(Cart, cart_id=cart_id)
-
-        serializer = CreateCartItemSerializer(
-            data=request.data,
-            context={"cart": cart},
-        )
-
+        serializer = CreateCartItemSerializer(data=request.data, context={"cart": cart})
         serializer.is_valid(raise_exception=True)
         item = serializer.save()
-
         return Response(
             {
                 "message": "Item added to cart",
@@ -62,9 +58,7 @@ class CartDetailApiView(APIView):
 
     def get(self, request, cart_id):
         cart = get_object_or_404(Cart, cart_id=cart_id)
-
         items = cart.items.all()
-
         return Response(
             {
                 "cart_id": cart.cart_id,
@@ -89,10 +83,8 @@ class OrderApiView(APIView):
 
     def post(self, request):
         serializer = CreateOrderSerializer(data=request.data)
-
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-
         return Response(
             {
                 "message": "Order created successfully",
@@ -111,10 +103,29 @@ class OrderDetailApiView(APIView):
             Order,
             order_number=order_number,
         )
-
         serializer = OrderSerializer(order)
-
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,
         )
+
+#get all orders (admin)
+class OrderListApiView(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+
+    def get(self, request):
+        orders=Order.objects.all()
+        serializer=ListOrdersSerializer(orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UpdateOrderStatusApiView(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        order=get_object_or_404(Order, pk=pk)
+        serializer=OrderUpdate(order, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"Order marked successfully",
+        }, status=status.HTTP_200_OK)

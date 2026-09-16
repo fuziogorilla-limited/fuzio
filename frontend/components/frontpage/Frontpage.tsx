@@ -8,8 +8,6 @@ import {
   FaBoxOpen,
   FaThLarge,
   FaTruck,
-  FaWarehouse,
-  FaHandshake,
 } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import apiFetch from "@/lib/api";
@@ -57,24 +55,6 @@ const WHY_US = [
     tag: "03",
     title: "One reliable source",
     body: "Workwear, PPE, cleaning, waste management and everyday industrial essentials in one place.",
-  },
-];
-
-const HOW_WE_WORK = [
-  {
-    icon: FaHandshake,
-    title: "Source",
-    body: "We work with manufacturers and trusted suppliers to keep quality and pricing consistent.",
-  },
-  {
-    icon: FaWarehouse,
-    title: "Stock",
-    body: "Core products are kept available so common items can move quickly when you need them.",
-  },
-  {
-    icon: FaTruck,
-    title: "Deliver",
-    body: "We deliver across Nairobi and dispatch orders countrywide through trusted couriers.",
   },
 ];
 
@@ -167,12 +147,14 @@ export default function HomePage() {
 
   return (
     <main className="w-full overflow-x-hidden bg-bg">
+
       {/* ======================================================
-          HERO — VIDEO BACKGROUND
+          HERO — FULL SCREEN VIDEO
       ====================================================== */}
 
-      <section className="relative min-h-[650px] overflow-hidden bg-ink text-paper sm:min-h-[700px]">
-        {/* Video */}
+      <section className="relative min-h-screen overflow-hidden bg-ink text-paper">
+
+        {/* Background Video */}
         <video
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay
@@ -186,160 +168,172 @@ export default function HomePage() {
         </video>
 
         {/* Main dark overlay */}
-        <div className="absolute inset-0 bg-ink/75" />
+        <div className="absolute inset-0 bg-ink/55" />
 
-        {/* Stronger left-side gradient for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/75 to-ink/30" />
+        {/* Left-side readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/55 to-transparent" />
 
         {/* Bottom fade */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent" />
 
-        {/* Hero content */}
-        <div className="relative z-10 mx-auto flex min-h-[650px] max-w-[1240px] items-center px-4 py-16 sm:min-h-[700px] sm:px-6 lg:py-20">
-          <div className="grid w-full gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-            {/* Main copy */}
-            <div>
-              <div className="flex items-center gap-3">
+        {/* Hero Content */}
+        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1240px] items-center px-4 py-24 sm:px-6">
 
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-accent">
-                  Industrial Workwear &amp; Supplies
-                </span>
-              </div>
+          <div className="max-w-4xl">
 
-              <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.92] tracking-[-0.045em] sm:text-3xl lg:text-5xl">
-                Built for the
-                <br />
-                <span className="text-accent">work ahead.</span>
-              </h1>
+            {/* Brand */}
+            <div className="flex items-center gap-3">
 
-              <p className="mt-7 max-w-xl text-[14px] leading-relaxed text-white/75 sm:text-[15px]">
-                Workwear, PPE and industrial essentials for the businesses
-                keeping Kenya moving. Practical products, reliable supply and
-                straightforward service.
-              </p>
+              <span className="h-[2px] w-8 bg-accent" />
 
-              <div className="mt-9 flex flex-wrap gap-3">
-                <Link
-                  href="/products"
-                  className="group inline-flex items-center gap-2 bg-accent px-6 py-3.5 text-[12px] font-bold uppercase tracking-wide text-ink transition-all hover:bg-paper"
-                >
-                  Shop Products
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
+                Fuzio Gorilla
+              </span>
 
-                  <FaArrowRight
-                    size={10}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
-                </Link>
-
-                <a
-                  href={waLink(
-                    "Hello Fuzio Gorilla, I'd like to enquire about your products."
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border-2 border-white/30 bg-ink/20 px-6 py-3.5 text-[12px] font-bold uppercase tracking-wide text-paper backdrop-blur-sm transition-all hover:border-accent hover:bg-accent hover:text-ink"
-                >
-                  <FaWhatsapp size={14} />
-                  WhatsApp Us
-                </a>
-              </div>
             </div>
 
-            {/* Hero information panel */}
-            <div className="lg:justify-self-end">
-              <div className="max-w-sm border-l-2 border-accent bg-ink/20 p-6 pl-6 backdrop-blur-[2px]">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
-                  Fuzio Gorilla
-                </div>
+            {/* Headline */}
+            <h1 className="mt-6 text-[58px] font-black uppercase leading-[0.84] tracking-[-0.06em] text-4xl md:text-6xl ">
+              Built for
+              <br />
+              <span className="text-accent">work</span>
+            </h1>
 
-                <p className="mt-3 text-xl font-bold leading-snug tracking-tight text-paper sm:text-2xl">
-                  The everyday essentials behind the work that matters.
-                </p>
-
-                <div className="mt-7 grid grid-cols-2 gap-5 border-t border-white/15 pt-6">
-                  <div>
-                    <div className="font-mono text-[9px] uppercase tracking-wide text-white/50">
-                      Supply
-                    </div>
-
-                    <div className="mt-1 text-[12px] font-bold text-paper">
-                      Nairobi + Kenya
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="font-mono text-[9px] uppercase tracking-wide text-white/50">
-                      Ordering
-                    </div>
-
-                    <div className="mt-1 text-[12px] font-bold text-paper">
-                      Online + WhatsApp
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Small category line */}
+            <div className="mt-7 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/70 sm:text-[11px]">
+              PPE&nbsp;&nbsp;•&nbsp;&nbsp;Workwear&nbsp;&nbsp;•&nbsp;&nbsp;Industrial
+              Supplies
             </div>
+
+            {/* CTA */}
+            <div className="mt-8 flex flex-wrap gap-3">
+
+              <Link
+                href="/products"
+                className="group inline-flex items-center gap-2 bg-accent px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-ink transition-all hover:bg-paper"
+              >
+                Shop Products
+
+                <FaArrowRight
+                  size={10}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+
+              <a
+                href={waLink(
+                  "Hello Fuzio Gorilla, I'd like to enquire about your products."
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border-2 border-white/30 bg-ink/30 px-6 py-3.5 text-[11px] font-bold uppercase tracking-wide text-paper backdrop-blur-sm transition-all hover:border-accent hover:bg-accent hover:text-ink"
+              >
+                <FaWhatsapp size={14} />
+                WhatsApp
+              </a>
+
+            </div>
+
           </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-12 right-5 z-20 hidden items-center gap-3 sm:flex">
+
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">
+            Explore
+          </span>
+
+          <span className="h-10 w-px bg-white/30" />
+
         </div>
 
         {/* Industrial stripe */}
-        <div className="absolute inset-x-0 bottom-0 z-20 h-[7px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_12px,var(--color-ink)_12px_24px)]" />
+        <div className="absolute inset-x-0 bottom-0 z-30 h-[7px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_12px,var(--color-ink)_12px_24px)]" />
+
       </section>
 
       {/* ======================================================
-          QUICK VALUE STRIP
+          VALUE PROPOSITIONS
       ====================================================== */}
 
       <section className="border-b border-ink/10 bg-paper">
+
         <div className="mx-auto grid max-w-[1240px] divide-y divide-ink/10 px-4 sm:px-6 md:grid-cols-3 md:divide-x md:divide-y-0">
-          <div className="flex items-center gap-4 py-5 md:px-7 md:py-6 md:first:pl-0">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent text-ink">
-              <FaBoxOpen size={15} />
+
+          {/* Workplace essentials */}
+          <div className="flex items-center gap-4 py-7 md:px-7 md:py-8 md:first:pl-0">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-accent text-ink">
+              <FaBoxOpen size={17} />
             </div>
 
             <div>
-              <div className="text-[12px] font-extrabold">
+              <div className="text-[12px] font-extrabold uppercase tracking-tight">
                 Workplace essentials
               </div>
 
-              <div className="mt-0.5 text-[11px] text-steel">
+              <div className="mt-1 text-[11px] text-steel">
                 Built around real jobs
               </div>
             </div>
+
           </div>
 
-          <div className="flex items-center gap-4 py-5 md:px-7 md:py-6">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent text-ink">
-              <FaWarehouse size={15} />
+          {/* Stock */}
+          <div className="flex items-center gap-4 py-7 md:px-7 md:py-8">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-accent text-ink">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+                aria-hidden="true"
+              >
+                <path d="M3 9l9-5 9 5" />
+                <path d="M5 10v9h14v-9" />
+                <path d="M9 19v-5h6v5" />
+              </svg>
             </div>
 
             <div>
-              <div className="text-[12px] font-extrabold">
+              <div className="text-[12px] font-extrabold uppercase tracking-tight">
                 Stock when possible
               </div>
 
-              <div className="mt-0.5 text-[11px] text-steel">
+              <div className="mt-1 text-[11px] text-steel">
                 Core products ready to move
               </div>
             </div>
+
           </div>
 
-          <div className="flex items-center gap-4 py-5 md:px-7 md:py-6 md:last:pr-0">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent text-ink">
-              <FaTruck size={15} />
+          {/* Delivery */}
+          <div className="flex items-center gap-4 py-7 md:px-7 md:py-8 md:last:pr-0">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-accent text-ink">
+              <FaTruck size={17} />
             </div>
 
             <div>
-              <div className="text-[12px] font-extrabold">
+              <div className="text-[12px] font-extrabold uppercase tracking-tight">
                 Delivery across Kenya
               </div>
 
-              <div className="mt-0.5 text-[11px] text-steel">
+              <div className="mt-1 text-[11px] text-steel">
                 Nairobi + countrywide dispatch
               </div>
             </div>
+
           </div>
+
         </div>
+
       </section>
 
       {/* ======================================================
@@ -347,8 +341,11 @@ export default function HomePage() {
       ====================================================== */}
 
       <section className="px-4 py-14 sm:px-6 sm:py-20">
+
         <div className="mx-auto max-w-[1240px]">
+
           <div className="mb-9 grid gap-5 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
                 Catalogue
@@ -360,36 +357,30 @@ export default function HomePage() {
             </div>
 
             <div className="lg:justify-self-end">
+
               <p className="max-w-md text-[13.5px] leading-relaxed text-steel">
                 Find the everyday equipment, workwear and site essentials
                 needed to keep your operation moving.
               </p>
-
-              <Link
-                href="/products"
-                className="group mt-4 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-wide text-accent-dark"
-              >
-                View Full Catalogue
-
-                <FaArrowRight
-                  size={10}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              </Link>
             </div>
+
           </div>
 
+          {/* Loading */}
           {catLoading && (
             <div className="grid grid-cols-1 gap-px border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
+
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
                   className="h-[280px] animate-pulse bg-paper"
                 />
               ))}
+
             </div>
           )}
 
+          {/* Error */}
           {!catLoading && catError && (
             <div className="border border-ink/10 bg-paper p-6 text-sm text-steel">
               Couldn&apos;t load categories right now. Please try again
@@ -397,15 +388,19 @@ export default function HomePage() {
             </div>
           )}
 
+          {/* Empty */}
           {!catLoading && !catError && categories.length === 0 && (
             <div className="border border-ink/10 bg-paper p-6 text-sm text-steel">
               No categories available yet.
             </div>
           )}
 
+          {/* Categories */}
           {!catLoading && !catError && categories.length > 0 && (
             <div className="grid grid-cols-1 gap-px border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
+
               {categories.map((category) => {
+
                 const img = mediaUrl(category.image);
 
                 return (
@@ -414,7 +409,9 @@ export default function HomePage() {
                     href={`/category/${category.id}`}
                     className="group flex min-w-0 flex-col bg-paper transition-colors hover:bg-ink"
                   >
+
                     <div className="relative h-[155px] overflow-hidden bg-ink-2">
+
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -433,9 +430,11 @@ export default function HomePage() {
                       <div className="absolute left-4 top-4 font-mono text-[10px] font-bold text-accent">
                         CATEGORY
                       </div>
+
                     </div>
 
                     <div className="flex flex-1 flex-col p-5">
+
                       <h3 className="line-clamp-1 text-[15px] font-extrabold transition-colors group-hover:text-paper">
                         {category.name}
                       </h3>
@@ -452,12 +451,16 @@ export default function HomePage() {
                           className="transition-transform group-hover:translate-x-1"
                         />
                       </span>
+
                     </div>
+
                   </Link>
                 );
               })}
+
             </div>
           )}
+
         </div>
       </section>
 
@@ -466,8 +469,11 @@ export default function HomePage() {
       ====================================================== */}
 
       <section className="bg-ink-2 px-4 py-14 text-paper sm:px-6 sm:py-20">
+
         <div className="mx-auto max-w-[1240px]">
+
           <div className="mb-9 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
                 Featured
@@ -489,16 +495,19 @@ export default function HomePage() {
                 className="transition-transform group-hover:translate-x-1"
               />
             </Link>
+
           </div>
 
           {prodLoading && (
             <div className="grid grid-cols-2 gap-px border border-white/10 bg-white/10 lg:grid-cols-4">
+
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
                   className="aspect-[0.82] animate-pulse bg-ink"
                 />
               ))}
+
             </div>
           )}
 
@@ -517,21 +526,29 @@ export default function HomePage() {
 
           {!prodLoading && !prodError && featured.length > 0 && (
             <div className="grid grid-cols-2 gap-px border border-white/10 bg-white/10 lg:grid-cols-4">
+
               {featured.map((product) => (
+
                 <div
                   key={product.id}
                   className="group flex min-w-0 flex-col bg-ink"
                 >
+
                   <Link
                     href={`/product/${product.id}`}
                     className="block"
                   >
+
                     <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-ink-2">
+
                       <FaBoxOpen className="text-4xl text-steel transition-transform duration-300 group-hover:scale-110 sm:text-5xl" />
+
                     </div>
+
                   </Link>
 
                   <div className="flex flex-1 flex-col p-4 sm:p-5">
+
                     <Link
                       href={`/product/${product.id}`}
                       className="line-clamp-2 text-[13px] font-bold leading-snug text-paper transition-colors hover:text-accent sm:text-sm"
@@ -561,11 +578,16 @@ export default function HomePage() {
                     >
                       Add to Cart
                     </button>
+
                   </div>
+
                 </div>
+
               ))}
+
             </div>
           )}
+
         </div>
       </section>
 
@@ -574,9 +596,13 @@ export default function HomePage() {
       ====================================================== */}
 
       <section className="px-4 py-14 sm:px-6 sm:py-20">
+
         <div className="mx-auto max-w-[1240px]">
+
           <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr]">
+
             <div>
+
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
                 Why Fuzio Gorilla
               </div>
@@ -603,14 +629,18 @@ export default function HomePage() {
                   className="transition-transform group-hover:translate-x-1"
                 />
               </Link>
+
             </div>
 
             <div className="grid gap-px border border-ink/10 bg-ink/10 md:grid-cols-3">
+
               {WHY_US.map((item) => (
+
                 <div
                   key={item.tag}
                   className="group bg-paper p-6 transition-colors hover:bg-accent"
                 >
+
                   <div className="font-mono text-[11px] font-bold text-accent-dark">
                     {item.tag}
                   </div>
@@ -624,66 +654,13 @@ export default function HomePage() {
                   </p>
 
                   <div className="mt-7 h-px w-8 bg-accent" />
+
                 </div>
+
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ======================================================
-          HOW WE WORK
-      ====================================================== */}
-
-      <section className="bg-ink px-4 py-14 text-paper sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-[1240px]">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-            <div>
-              <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-                How We Work
-              </div>
-
-              <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-                From source to site.
-              </h2>
             </div>
 
-            <p className="max-w-xl text-[13.5px] leading-relaxed text-steel-light lg:justify-self-end">
-              We keep the process simple. Find the right product, confirm the
-              details, then get it where it needs to go.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-px border border-white/10 bg-white/10 md:grid-cols-3">
-            {HOW_WE_WORK.map((item, index) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.title}
-                  className="group bg-ink p-7 transition-colors hover:bg-ink-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[11px] font-bold text-accent">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-
-                    <Icon
-                      size={17}
-                      className="text-accent transition-transform group-hover:scale-110"
-                    />
-                  </div>
-
-                  <h3 className="mt-10 text-lg font-extrabold">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-steel-light">
-                    {item.body}
-                  </p>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
@@ -693,9 +670,13 @@ export default function HomePage() {
       ====================================================== */}
 
       <section className="bg-accent px-4 py-14 text-ink sm:px-6 sm:py-16">
+
         <div className="mx-auto max-w-[1240px]">
+
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+
             <div>
+
               <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-ink/60">
                 Get Moving
               </div>
@@ -708,9 +689,11 @@ export default function HomePage() {
                 Browse the catalogue or send us your list. We&apos;ll help
                 confirm availability, pricing and delivery.
               </p>
+
             </div>
 
             <div className="flex flex-wrap gap-3 lg:justify-end">
+
               <Link
                 href="/products"
                 className="group inline-flex items-center gap-2 border-2 border-ink bg-ink px-6 py-3.5 text-[12px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-paper hover:text-ink"
@@ -734,7 +717,9 @@ export default function HomePage() {
                 <FaWhatsapp size={14} />
                 Get a Quote
               </a>
+
             </div>
+
           </div>
         </div>
       </section>
@@ -744,6 +729,7 @@ export default function HomePage() {
       ====================================================== */}
 
       <div className="h-[7px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_12px,var(--color-ink)_12px_24px)]" />
+
     </main>
   );
 }

@@ -42,6 +42,7 @@ class Order(models.Model):
 
     order_number=models.CharField(unique=True, max_length=12, editable=False)
     created_at=models.DateTimeField(auto_now_add=True)
+    is_delivered=models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.order_number:

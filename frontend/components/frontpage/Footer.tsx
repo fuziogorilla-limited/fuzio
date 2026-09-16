@@ -39,9 +39,6 @@ export default function Footer() {
               Quick Links
             </h5>
             <nav className="flex flex-col gap-2.5 text-[13px]">
-              <Link href="/" className="hover:text-accent transition-colors">
-                Home
-              </Link>
               <Link href="/shop" className="hover:text-accent transition-colors">
                 Shop
               </Link>
