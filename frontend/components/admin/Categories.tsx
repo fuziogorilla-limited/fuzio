@@ -10,8 +10,11 @@ import {
   FaImage,
 } from "react-icons/fa";
 
-import { CATEGORY_MESSAGES } from "@/constants/category";
 import { useCategories } from "@/hooks/useCategories";
+
+const CATEGORY_MESSAGES = {
+  empty: "No categories found.",
+} as const;
 
 import type { Category } from "@/types/fields";
 

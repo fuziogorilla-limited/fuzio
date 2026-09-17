@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
-import { CART } from "@/constants/cart";
+import { DELIVERY_FEE } from "@/constants/shared";
 import { formatPrice, waLink } from "@/lib/utils";
 
 export default function CartDrawer() {
@@ -23,13 +23,13 @@ export default function CartDrawer() {
     removeLine,
   } = useCart();
 
-  const delivery = cart.length ? CART.deliveryFee : 0;
+  const delivery = cart.length ? DELIVERY_FEE : 0;
   const total = subtotal + delivery;
 
   const waFromCart = () => {
     if (!cart.length) return;
 
-    let message = `${CART.whatsappMessage}\n\nProducts:\n`;
+    let message = "Hello Fuzio Gorilla,\n\nI would like to place an order.\n\nProducts:\n";
 
     cart.forEach((line) => {
       const options = [line.size, line.color]

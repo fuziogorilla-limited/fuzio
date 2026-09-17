@@ -8,3 +8,5 @@ export const SITE = {
     email: "orders@fuziogorilla.co.ke",
   },
 } as const;
+
+export const DELIVERY_FEE = 300;

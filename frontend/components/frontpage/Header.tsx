@@ -12,8 +12,13 @@ import {
 } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
-import { NAV_LINKS } from "@/constants/navigation";
 import { waLink } from "@/lib/utils";
+
+const NAV_LINKS = [
+  { label: "Shop", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+] as const;
 
 export default function Header() {
   const router = useRouter();

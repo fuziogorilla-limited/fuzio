@@ -11,9 +11,14 @@ import {
 } from "react-icons/fa";
 
 import { useHomeData } from "@/hooks/useHomeData";
-import { WHY_US } from "@/constants/home";
 import { waLink, mediaUrl, formatPrice } from "@/lib/utils";
 import type { PublicCategory as Category, PublicProduct as Product } from "@/types/fields";
+
+const WHY_US = [
+  { tag: "01", title: "Durable by design", body: "Products selected for demanding working environments, not desk jobs." },
+  { tag: "02", title: "Practical, not fussy", body: "We focus on products that solve real workplace problems without unnecessary complications." },
+  { tag: "03", title: "One reliable source", body: "Workwear, PPE, cleaning, waste management and everyday industrial essentials in one place." },
+] as const;
 
 export default function Home() {
   const {

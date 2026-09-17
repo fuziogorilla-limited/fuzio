@@ -3,10 +3,34 @@
 import Link from "next/link";
 import { FaEye } from "react-icons/fa";
 
-import { ORDER_STATUS_STYLES, ORDER_MESSAGES, STATUS_OPTIONS } from "@/constants/orders";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/lib/utils";
 import type { OrderStatus } from "@/types/fields";
+
+const STATUS_OPTIONS: OrderStatus[] = [
+  "pending_payment",
+  "processing",
+  "paid",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "payment_failed",
+];
+
+const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
+  pending_payment: "bg-accent/15 text-accent-dark",
+  processing: "bg-blue-100 text-blue-700",
+  paid: "bg-green/15 text-green",
+  shipped: "bg-indigo-100 text-indigo-700",
+  delivered: "bg-green/15 text-green",
+  payment_failed: "bg-red-100 text-red-600",
+  cancelled: "bg-red-100 text-red-600",
+};
+
+const ORDER_MESSAGES = {
+  loadError: "Couldn't load orders right now.",
+  empty: "No orders found.",
+} as const;
 
 function formatOrderDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-KE", {

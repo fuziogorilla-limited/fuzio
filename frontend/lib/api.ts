@@ -63,8 +63,6 @@ async function refreshAccessToken(): Promise<string | null> {
         return null;
     }
 
-    // If another request is already refreshing the token,
-    // wait for that same request instead of creating another one.
     if (refreshPromise) {
         return refreshPromise;
     }
@@ -84,9 +82,10 @@ async function refreshAccessToken(): Promise<string | null> {
                 }
             );
 
-            const data = await response
-                .json()
-                .catch(() => null) as RefreshResponse | null;
+            const data =
+                (await response.json().catch(() => null)) as
+                    | RefreshResponse
+                    | null;
 
             if (!response.ok || !data?.access) {
                 clearTokens();
@@ -126,41 +125,67 @@ async function apiFetch<T>(
         ? getAccessToken()
         : null;
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method,
-        headers: {
-            "Content-Type": "application/json",
+    /*
+     * FormData MUST NOT have Content-Type manually set.
+     *
+     * The browser automatically sets:
+     *
+     * multipart/form-data;
+     * boundary=----WebKitFormBoundary...
+     *
+     * If we manually set Content-Type, Django may not
+     * correctly parse the uploaded image/form fields.
+     */
+    const isFormData = body instanceof FormData;
 
-            ...(accessToken
-                ? {
-                      Authorization: `Bearer ${accessToken}`,
-                  }
-                : {}),
+    const requestHeaders = new Headers(headers);
 
-            ...headers,
-        },
+    if (!isFormData) {
+        requestHeaders.set(
+            "Content-Type",
+            "application/json"
+        );
+    } else {
+        requestHeaders.delete("Content-Type");
+    }
 
-        ...(body !== undefined
-            ? {
-                  body: JSON.stringify(body),
-              }
-            : {}),
-    });
+    if (accessToken) {
+        requestHeaders.set(
+            "Authorization",
+            `Bearer ${accessToken}`
+        );
+    }
 
-    const data = await response.json().catch(() => null);
+    const requestBody =
+        body === undefined
+            ? undefined
+            : isFormData
+                ? body
+                : JSON.stringify(body);
+
+    const response = await fetch(
+        `${API_BASE_URL}${endpoint}`,
+        {
+            method,
+            headers: requestHeaders,
+            body: requestBody,
+        }
+    );
+
+    const data = await response
+        .json()
+        .catch(() => null);
 
     /*
      * If access token expired, attempt one refresh.
-     *
-     * Do NOT attempt refresh for authentication endpoints,
-     * otherwise we could create a refresh loop.
      */
     if (
         response.status === 401 &&
         shouldAttachAuth &&
         !skipRefresh
     ) {
-        const newAccessToken = await refreshAccessToken();
+        const newAccessToken =
+            await refreshAccessToken();
 
         if (!newAccessToken) {
             throw {
@@ -169,11 +194,12 @@ async function apiFetch<T>(
             };
         }
 
-        // Retry the original request with the new access token.
         return apiFetch<T>(endpoint, {
             ...options,
             headers: {
-                ...headers,
+                ...Object.fromEntries(
+                    new Headers(headers).entries()
+                ),
                 Authorization: `Bearer ${newAccessToken}`,
             },
             skipRefresh: true,

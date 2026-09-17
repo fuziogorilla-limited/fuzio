@@ -8,8 +8,28 @@ import {
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
 
-import { EMPTY_PRODUCT_DRAFT } from "@/constants/products";
-import type { Category, Product, ProductDraft } from "@/types/fields";
+import type {
+  Category,
+  Product,
+  ProductDraft,
+  PublicCategory,
+  PublicProduct,
+} from "@/types/fields";
+
+const EMPTY_PRODUCT_DRAFT: ProductDraft = {
+  category: "",
+  name: "",
+  description: "",
+  buying_price: "",
+  selling_price: "",
+  image: null,
+  color: "",
+  size: "",
+  quantity: "",
+  is_active: true,
+  feature: false,
+  variants: [],
+};
 
 type ApiErrorShape = {
   status?: number;
@@ -341,4 +361,74 @@ export function useProducts() {
     handleSubmit,
     handleDelete,
   };
+}
+
+// Public product reads belong here so product pages share one API source.
+export function useProductData(productId: number) {
+  const [product, setProduct] = useState<PublicProduct | null>(null);
+  const [category, setCategory] = useState<PublicCategory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    apiFetch<PublicProduct[]>(routes.inventory.publicProducts)
+      .then(async (products) => {
+        if (cancelled) return;
+
+        const found = products.find((item) => item.id === productId && item.is_active) ?? null;
+        if (!found) {
+          setNotFound(true);
+          return;
+        }
+
+        setProduct(found);
+        const categories = await apiFetch<PublicCategory[]>(routes.inventory.publicCategories);
+        if (!cancelled) {
+          setCategory(categories.find((item) => item.id === found.category) ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [productId]);
+
+  return { product, category, loading, error, notFound };
+}
+
+// Home uses the same public product endpoint as product detail pages.
+export function usePublicProducts() {
+  const [products, setProducts] = useState<PublicProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    apiFetch<PublicProduct[]>(routes.inventory.publicProducts)
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { products, loading, error };
 }

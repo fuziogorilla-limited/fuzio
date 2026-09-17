@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { CART } from "@/constants/cart";
-import { CHECKOUT } from "@/constants/checkout";
+import { DELIVERY_FEE } from "@/constants/shared";
 import { useCart } from "@/context/CartContext";
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
@@ -14,6 +13,14 @@ import type {
   CheckoutFormData,
   OrderResponse,
 } from "@/types/fields";
+
+const CHECKOUT = {
+  emptyCartMessage: "Your cart is empty.",
+  validationMessage:
+    "Please fill in your name, phone, county, town and delivery address.",
+  submitError:
+    "Something went wrong placing your order. Please check your details and try again.",
+} as const;
 
 const EMPTY_FORM: CheckoutFormData = {
   firstName: "",
@@ -41,7 +48,7 @@ export function useCheckout() {
   const [confirmedOrder, setConfirmedOrder] =
     useState<OrderResponse | null>(null);
 
-  const delivery = cart.length ? CART.deliveryFee : 0;
+  const delivery = cart.length ? DELIVERY_FEE : 0;
   const total = subtotal + delivery;
 
   useEffect(() => {

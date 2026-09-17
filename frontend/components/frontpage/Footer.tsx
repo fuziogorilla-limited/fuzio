@@ -6,12 +6,19 @@ import {
   FaTruck,
 } from "react-icons/fa";
 
-import { SITE } from "@/constants/site";
-import {
-  FOOTER_CATEGORIES,
-  FOOTER_WHATSAPP_MESSAGE,
-} from "@/constants/footer";
+import { SITE } from "@/constants/shared";
 import { waLink } from "@/lib/utils";
+
+const FOOTER_CATEGORIES = [
+  { id: "workwear", name: "Workwear" },
+  { id: "ppe", name: "PPE & Safety" },
+  { id: "waste", name: "Waste Management" },
+  { id: "cleaning", name: "Cleaning" },
+  { id: "storage", name: "Storage" },
+] as const;
+
+const FOOTER_WHATSAPP_MESSAGE =
+  "Hello Fuzio Gorilla, I'd like to ask about your products.";
 
 export default function Footer() {
   return (

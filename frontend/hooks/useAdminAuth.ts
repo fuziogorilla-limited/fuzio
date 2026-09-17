@@ -8,10 +8,6 @@ import { useRouter } from "next/navigation";
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
 
-import {
-  ADMIN_AUTH_MESSAGES,
-} from "@/constants/admin-auth";
-
 import type {
   AdminAuthError,
   AdminAuthStep,
@@ -19,6 +15,20 @@ import type {
   LoginResponse,
   VerifyCodeResponse,
 } from "@/types/fields";
+
+export const ADMIN_AUTH_MESSAGES = {
+  invalidCredentials: "Invalid email or password.",
+  loginFallback: "Invalid email or password.",
+  forgotPasswordFallback: "Something went wrong. Please try again.",
+  resendFallback: "Couldn't resend the code. Please try again.",
+  invalidCode: "That code is invalid or has expired.",
+  missingLoginTokens: "Login succeeded but the server did not return authentication tokens.",
+  missingVerificationToken: "Verification succeeded but no access token was returned.",
+  emailPlaceholder: "admin@fuziogorilla.co.ke",
+  passwordPlaceholder: "••••••••",
+  codePlaceholder: "000000",
+  resendCooldown: 30,
+} as const;
 
 function extractErrorMessage(
   error: unknown,

@@ -1,4 +1,4 @@
-import { SITE } from "@/constants/site";
+import { SITE } from "@/constants/shared";
 
 export function waLink(message: string) {
   return `https://wa.me/${SITE.contact.whatsapp}?text=${encodeURIComponent(

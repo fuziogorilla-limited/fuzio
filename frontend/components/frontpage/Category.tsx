@@ -5,10 +5,15 @@ import { useParams } from "next/navigation";
 import { FaBoxOpen } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
-import { CATEGORY_SORT_OPTIONS } from "@/constants/category";
-import { useCategoryData } from "@/hooks/useCategoryData";
+import { useCategoryData } from "@/hooks/useCategories";
 import { formatPrice, mediaUrl } from "@/lib/utils";
 import type { SortOption } from "@/types/fields";
+
+const CATEGORY_SORT_OPTIONS = [
+  { value: "default", label: "Sort: Featured" },
+  { value: "low", label: "Price: Low to High" },
+  { value: "high", label: "Price: High to Low" },
+] as const;
 import { useState } from "react";
 
 export default function Category() {

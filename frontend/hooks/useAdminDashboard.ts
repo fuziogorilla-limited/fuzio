@@ -8,9 +8,12 @@ import routes from "@/lib/routes";
 import type { AdminProduct, RecentOrder } from "@/types/fields";
 
 function orderTotal(order: RecentOrder) {
-  return order.items.reduce(
-    (sum, item) =>
-      sum + Number(item.price) * item.quantity,
+  if (order.total_amount !== undefined) {
+    return Number(order.total_amount);
+  }
+
+  return (order.items ?? []).reduce(
+    (sum, item) => sum + Number(item.price) * item.quantity,
     0
   );
 }

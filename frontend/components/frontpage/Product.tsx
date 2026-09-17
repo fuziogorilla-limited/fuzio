@@ -9,9 +9,14 @@ import {
 } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
-import { PRODUCT } from "@/constants/products";
-import { useProductData } from "@/hooks/useProductData";
+import { useProductData } from "@/hooks/useProducts";
 import { formatPrice, mediaUrl, waLink } from "@/lib/utils";
+
+const PRODUCT = {
+  imageUnavailable: "Product photos aren't available yet",
+  loadError: "Couldn't load this product right now. Please try again shortly.",
+  notFound: "We couldn't find that product.",
+} as const;
 
 export default function Product() {
   const params = useParams();

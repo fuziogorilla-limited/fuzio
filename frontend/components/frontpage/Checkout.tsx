@@ -2,12 +2,16 @@
 
 import { FaWhatsapp } from "react-icons/fa";
 
-import { CHECKOUT } from "@/constants/checkout";
 import { useCheckout } from "@/hooks/useCheckout";
 import { formatPrice } from "@/lib/utils";
 
 const FIELD_CLASSES =
   "w-full border-[1.5px] border-ink/15 bg-paper px-3.5 py-3 text-[13.5px] text-ink outline-none transition-colors placeholder:text-steel-light focus:border-ink";
+
+const CHECKOUT = {
+  pageLabel: "Checkout",
+  title: "Delivery & Contact Details",
+} as const;
 
 export default function Checkout() {
   const {

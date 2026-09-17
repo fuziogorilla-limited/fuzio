@@ -724,7 +724,8 @@ export interface RecentOrder {
   last_name: string;
   status: OrderStatus;
   created_at: ISODateString;
-  items: OrderItem[];
+  total_amount: DecimalString;
+  items?: OrderItem[];
 }
 
 

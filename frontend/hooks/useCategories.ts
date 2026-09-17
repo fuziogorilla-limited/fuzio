@@ -2,11 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  CATEGORY_MESSAGES,
-  EMPTY_CATEGORY_DRAFT,
-} from "@/constants/category";
-
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
 
@@ -17,6 +12,22 @@ import type {
   CreateCategoryPayload,
   UpdateCategoryPayload,
 } from "@/types/fields";
+
+const EMPTY_CATEGORY_DRAFT: CategoryDraft = {
+  name: "",
+  description: "",
+  image: null,
+  is_active: true,
+};
+
+const CATEGORY_MESSAGES = {
+  loadError: "Couldn't load categories right now.",
+  nameRequired: "Category name is required.",
+  saveError: "Couldn't save this category. Please try again.",
+  deleteError: "Couldn't delete this category. Please try again.",
+} as const;
+
+import type { PublicCategory, PublicProduct } from "@/types/fields";
 
 function extractErrorMessage(
   error: unknown,
@@ -389,4 +400,78 @@ export function useCategories() {
     saveCategory,
     deleteCategory,
   };
+}
+
+// Public category data belongs here so every category view uses one API source.
+export function useCategoryData(categoryId: number) {
+  const [category, setCategory] = useState<PublicCategory | null>(null);
+  const [catLoading, setCatLoading] = useState(true);
+  const [catError, setCatError] = useState(false);
+  const [products, setProducts] = useState<PublicProduct[]>([]);
+  const [prodLoading, setProdLoading] = useState(true);
+  const [prodError, setProdError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    apiFetch<PublicCategory[]>(routes.inventory.publicCategories)
+      .then((data) => {
+        if (!cancelled) {
+          setCategory(data.find((item) => item.id === categoryId) ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCatError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setCatLoading(false);
+      });
+
+    apiFetch<PublicProduct[]>(routes.inventory.publicProducts)
+      .then((data) => {
+        if (!cancelled) {
+          setProducts(data.filter((product) => product.category === categoryId && product.is_active));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProdError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setProdLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId]);
+
+  return { category, catLoading, catError, products, prodLoading, prodError };
+}
+
+// Home and other public pages can consume categories without admin state.
+export function usePublicCategories() {
+  const [categories, setCategories] = useState<PublicCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    apiFetch<PublicCategory[]>(routes.inventory.publicCategories)
+      .then((data) => {
+        if (!cancelled) setCategories(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { categories, loading, error };
 }

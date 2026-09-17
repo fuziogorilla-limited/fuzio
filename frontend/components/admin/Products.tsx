@@ -2,8 +2,11 @@
 
 import { FaBoxOpen, FaEdit, FaPlus, FaSearch, FaSpinner, FaTimes, FaTrash } from "react-icons/fa";
 
-import { PRODUCT_MESSAGES } from "@/constants/products";
 import { useProducts } from "@/hooks/useProducts";
+
+const PRODUCT_MESSAGES = {
+  empty: "No products found.",
+} as const;
 
 export default function Products() {
   const {
