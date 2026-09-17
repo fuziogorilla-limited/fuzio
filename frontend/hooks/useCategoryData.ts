@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
-import type { Category, Product } from "@/types/category";
+import type { PublicCategory as Category, PublicProduct as Product } from "@/types/fields";
 
 export function useCategoryData(categoryId: number) {
   const [category, setCategory] = useState<Category | null>(null);
@@ -17,13 +17,6 @@ export function useCategoryData(categoryId: number) {
 
   useEffect(() => {
     let cancelled = false;
-
-    setCategory(null);
-    setProducts([]);
-    setCatLoading(true);
-    setProdLoading(true);
-    setCatError(false);
-    setProdError(false);
 
     apiFetch<Category[]>(routes.inventory.publicCategories)
       .then((data) => {

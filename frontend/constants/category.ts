@@ -1,3 +1,5 @@
+import type { CategoryDraft } from "@/types/fields";
+
 export const CATEGORY_SORT_OPTIONS = [
   {
     value: "default",
@@ -13,16 +15,18 @@ export const CATEGORY_SORT_OPTIONS = [
   },
 ] as const;
 
-export const EMPTY_CATEGORY_DRAFT = {
+
+export const EMPTY_CATEGORY_DRAFT: CategoryDraft = {
   name: "",
   description: "",
+  image: null,
   is_active: true,
-} as const;
+};
 
 export const CATEGORY_MESSAGES = {
+  empty: "No categories found.",
   loadError: "Couldn't load categories right now.",
-  nameRequired: "Name is required.",
+  nameRequired: "Category name is required.",
   saveError: "Couldn't save this category. Please try again.",
   deleteError: "Couldn't delete this category. Please try again.",
-  empty: "No categories yet. Add your first one above.",
-} as const;
+};

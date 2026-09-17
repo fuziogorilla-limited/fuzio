@@ -9,8 +9,7 @@ import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
 
 import { EMPTY_PRODUCT_DRAFT } from "@/constants/products";
-import type { Category } from "@/types/category";
-import type { Product, ProductDraft } from "@/types/product";
+import type { Category, Product, ProductDraft } from "@/types/fields";
 
 type ApiErrorShape = {
   status?: number;
@@ -156,11 +155,13 @@ export function useProducts() {
       description: product.description,
       buying_price: product.buying_price,
       selling_price: product.selling_price,
-      color: product.color,
-      size: product.size,
-      quantity: String(product.quantity),
+      image: null,
+      color: product.variants[0]?.color ?? "",
+      size: product.variants[0]?.size ?? "",
+      quantity: String(product.variants[0]?.quantity ?? 0),
       is_active: product.is_active,
       feature: product.feature,
+      variants: product.variants,
     });
 
     setFormError(null);
@@ -210,11 +211,15 @@ export function useProducts() {
       description: draft.description,
       buying_price: draft.buying_price,
       selling_price: draft.selling_price,
-      color: draft.color,
-      size: draft.size,
-      quantity: Number(draft.quantity),
       is_active: draft.is_active,
       feature: draft.feature,
+      variants: [
+        {
+          color: draft.color,
+          size: draft.size,
+          quantity: Number(draft.quantity),
+        },
+      ],
     };
 
     setSaving(true);

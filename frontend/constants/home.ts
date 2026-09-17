@@ -1,5 +1,3 @@
-export const WHATSAPP_NUMBER = "254798982870";
-
 export const WHY_US = [
   {
     tag: "01",

@@ -13,7 +13,7 @@ import {
 import { useHomeData } from "@/hooks/useHomeData";
 import { WHY_US } from "@/constants/home";
 import { waLink, mediaUrl, formatPrice } from "@/lib/utils";
-import type { Category, Product } from "@/types/home";
+import type { PublicCategory as Category, PublicProduct as Product } from "@/types/fields";
 
 export default function Home() {
   const {

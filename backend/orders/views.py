@@ -42,10 +42,10 @@ class CartItemApiView(APIView):
             {
                 "message": "Item added to cart",
                 "item": {
-                    "product": item.product.id,
+                    "variant": item.variant_id,
                     "quantity": item.quantity,
                     "price": item.price,
-                    "total_price": item.total_price(),
+                    "total_price": item.total_price,
                 },
             },
             status=status.HTTP_201_CREATED,
@@ -64,11 +64,11 @@ class CartDetailApiView(APIView):
                 "cart_id": cart.cart_id,
                 "items": [
                     {
-                        "product": item.product.id,
-                        "product_name": item.product.name,
+                        "variant": item.variant_id,
+                        "product_name": item.variant.product.name,
                         "quantity": item.quantity,
                         "price": item.price,
-                        "total_price": item.total_price(),
+                        "total_price": item.total_price,
                     }
                     for item in items
                 ],
@@ -82,9 +82,17 @@ class OrderApiView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        serializer = CreateOrderSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+
+        serializer = CreateOrderSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
         order = serializer.save()
+
         return Response(
             {
                 "message": "Order created successfully",
@@ -93,17 +101,30 @@ class OrderApiView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-
 # Get a single order
 class OrderDetailApiView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, order_number):
+
+        token = request.query_params.get("token")
+
+        if not token:
+            return Response(
+                {
+                    "message": "Order access token is required."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         order = get_object_or_404(
             Order,
             order_number=order_number,
+            public_token=token,
         )
+
         serializer = OrderSerializer(order)
+
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,

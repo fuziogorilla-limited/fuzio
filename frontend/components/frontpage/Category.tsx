@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { CATEGORY_SORT_OPTIONS } from "@/constants/category";
 import { useCategoryData } from "@/hooks/useCategoryData";
 import { formatPrice, mediaUrl } from "@/lib/utils";
-import type { SortOption } from "@/types/category";
+import type { SortOption } from "@/types/fields";
 import { useState } from "react";
 
 export default function Category() {
@@ -229,22 +229,18 @@ export default function Category() {
 
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={() => {
+                            const variant = product.variants[0];
+                            if (!variant) return;
+
                             addToCart({
-                              pid: String(
-                                product.id
-                              ),
+                              pid: String(variant.id),
                               name: product.name,
-                              price: Number(
-                                product.selling_price
-                              ),
-                              size:
-                                product.size || null,
-                              color:
-                                product.color ||
-                                null,
-                            })
-                          }
+                              price: Number(product.selling_price),
+                              size: variant.size,
+                              color: variant.color,
+                            });
+                          }}
                           className="mt-2.5 w-full border-2 border-ink bg-ink py-2 text-[11px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink"
                         >
                           Add to Cart

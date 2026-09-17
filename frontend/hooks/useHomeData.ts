@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
-import type { Category, Product } from "@/types/home";
+import type { PublicCategory as Category, PublicProduct as Product } from "@/types/fields";
 
 export function useHomeData() {
   const [categories, setCategories] = useState<Category[]>([]);

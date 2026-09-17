@@ -5,7 +5,7 @@ import {
   FaTruck,
 } from "react-icons/fa";
 
-import type { ProcessStep } from "@/types/about";
+import type { ProcessStep } from "@/types/fields";
 
 export const INDUSTRIES = [
   "Construction",

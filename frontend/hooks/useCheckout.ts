@@ -13,7 +13,7 @@ import { formatPrice, waLink } from "@/lib/utils";
 import type {
   CheckoutFormData,
   OrderResponse,
-} from "@/types/checkout";
+} from "@/types/fields";
 
 const EMPTY_FORM: CheckoutFormData = {
   firstName: "",
@@ -86,19 +86,31 @@ export function useCheckout() {
     setSubmitting(true);
 
     try {
+      const cartResponse = await apiFetch<{ cart_id: string }>(
+        routes.cart.create,
+        { method: "POST", body: {} }
+      );
+
+      for (const line of cart) {
+        await apiFetch(routes.cart.items(cartResponse.cart_id), {
+          method: "POST",
+          body: {
+            variant: Number(line.pid),
+            quantity: line.qty,
+          },
+        });
+      }
+
       const payload = {
+        cart_id: cartResponse.cart_id,
         first_name: form.firstName.trim(),
         last_name: form.lastName.trim(),
         phone_number: form.phone.trim(),
-        email: form.email.trim() || null,
+        email: form.email.trim() || "",
         county: form.county.trim(),
         town: form.town.trim(),
         address: form.address.trim(),
-        additional_information: form.notes.trim() || null,
-        items: cart.map((line) => ({
-          product: Number(line.pid),
-          quantity: line.qty,
-        })),
+        additional_information: form.notes.trim() || "",
       };
 
       const response = await apiFetch<{

@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-import type { AddToCartInput, CartLine } from "@/types/cart";
+import type { AddToCartInput, CartLine } from "@/types/fields";
 
 type CartContextValue = {
   cart: CartLine[];

@@ -18,7 +18,7 @@ import {
   ENQUIRY_TYPES,
 } from "@/constants/contact";
 import { waLink } from "@/lib/utils";
-import type { ContactFormData } from "@/types/contact";
+import type { ContactFormData } from "@/types/fields";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);

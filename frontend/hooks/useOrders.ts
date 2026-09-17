@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
-import type { Order, OrderStatus } from "@/types/order";
+import type { AdminOrder as Order, OrderStatus } from "@/types/fields";
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);

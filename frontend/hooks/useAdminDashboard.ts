@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
 
-import type { AdminProduct } from "@/types/admin";
-import type { RecentOrder } from "@/types/order";
+import type { AdminProduct, RecentOrder } from "@/types/fields";
 
 function orderTotal(order: RecentOrder) {
   return order.items.reduce(
@@ -87,7 +86,7 @@ export function useAdminDashboard() {
 
   const pendingOrders =
     orders?.filter(
-      (order) => order.status === "pending"
+      (order) => order.status === "pending_payment"
     ).length ?? null;
 
   const totalRevenue =

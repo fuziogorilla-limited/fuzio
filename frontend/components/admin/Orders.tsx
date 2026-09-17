@@ -6,7 +6,7 @@ import { FaEye } from "react-icons/fa";
 import { ORDER_STATUS_STYLES, ORDER_MESSAGES, STATUS_OPTIONS } from "@/constants/orders";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/lib/utils";
-import type { OrderStatus } from "@/types/order";
+import type { OrderStatus } from "@/types/fields";
 
 function formatOrderDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-KE", {
@@ -14,16 +14,6 @@ function formatOrderDate(iso: string) {
     month: "short",
     year: "numeric",
   });
-}
-
-function orderTotal(
-  items: { price: string; quantity: number }[]
-) {
-  return items.reduce(
-    (sum, item) =>
-      sum + Number(item.price) * item.quantity,
-    0
-  );
 }
 
 export default function Orders() {
@@ -193,9 +183,7 @@ export default function Orders() {
 
                       {/* Total */}
                       <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-semibold sm:px-5">
-                        {formatPrice(
-                          orderTotal(order.items)
-                        )}
+                        {formatPrice(Number(order.total_amount))}
                       </td>
 
                       {/* View */}

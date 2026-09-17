@@ -1,7 +1,9 @@
+import { SITE } from "@/constants/site";
+
 export const CONTACT = {
-  phone: "+254 798 982 870",
-  phoneLink: "+254798982870",
-  email: "info@fuziogorilla.co.ke",
+  phone: SITE.contact.phone,
+  phoneLink: SITE.contact.phoneLink,
+  email: SITE.contact.email,
 
   location: {
     city: "Nairobi",

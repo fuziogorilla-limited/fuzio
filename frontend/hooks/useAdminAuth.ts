@@ -18,7 +18,7 @@ import type {
   ForgotPasswordResponse,
   LoginResponse,
   VerifyCodeResponse,
-} from "@/types/admin-auth";
+} from "@/types/fields";
 
 function extractErrorMessage(
   error: unknown,

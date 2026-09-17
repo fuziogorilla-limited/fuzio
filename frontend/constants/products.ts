@@ -1,4 +1,4 @@
-import type { ProductDraft } from "@/types/product";
+import type { ProductDraft } from "@/types/fields";
 
 export const EMPTY_PRODUCT_DRAFT: ProductDraft = {
   category: "",
@@ -6,11 +6,13 @@ export const EMPTY_PRODUCT_DRAFT: ProductDraft = {
   description: "",
   buying_price: "",
   selling_price: "",
+  image: null,
   color: "",
   size: "",
   quantity: "",
   is_active: true,
   feature: false,
+  variants: [],
 };
 
 export const PRODUCT_MESSAGES = {
@@ -23,4 +25,19 @@ export const PRODUCT_MESSAGES = {
   deleteError:
     "Couldn't delete this product. Please try again.",
   empty: "No products found.",
+} as const;
+
+export const PRODUCT = {
+  whatsappMessage:
+    "Hello Fuzio Gorilla,\n\nI would like to place an order.",
+
+  imageUnavailable:
+    "Product photos aren't available yet",
+
+  loadError:
+    "Couldn't load this product right now. Please try again shortly.",
+
+  notFound:
+    "We couldn't find that product.",
+
 } as const;

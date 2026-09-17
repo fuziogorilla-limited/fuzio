@@ -7,10 +7,13 @@ import {
   FaThLarge,
   FaTimes,
   FaSpinner,
+  FaImage,
 } from "react-icons/fa";
 
 import { CATEGORY_MESSAGES } from "@/constants/category";
 import { useCategories } from "@/hooks/useCategories";
+
+import type { Category } from "@/types/fields";
 
 export default function Categories() {
   const {
@@ -34,13 +37,32 @@ export default function Categories() {
     deleteCategory,
   } = useCategories();
 
+  /*
+   * Keep the component aware of the backend category shape.
+   *
+   * Category:
+   * - id
+   * - name
+   * - description
+   * - image
+   * - is_active
+   * - date_added
+   *
+   * CreateCategoryPayload / UpdateCategoryPayload:
+   * - name
+   * - description
+   * - image
+   * - is_active
+   */
+  const typedCategories: Category[] = categories;
+
   return (
     <div className="w-full min-w-0">
       {/* Toolbar */}
       <div className="mb-5 flex items-center justify-between gap-3">
         <span className="text-[12.5px] text-steel">
-          {categories.length} categor
-          {categories.length === 1 ? "y" : "ies"}
+          {typedCategories.length} categor
+          {typedCategories.length === 1 ? "y" : "ies"}
         </span>
 
         <button
@@ -75,7 +97,7 @@ export default function Categories() {
 
         {!loading &&
           !loadError &&
-          categories.length === 0 && (
+          typedCategories.length === 0 && (
             <p className="p-5 text-[13px] text-steel">
               {CATEGORY_MESSAGES.empty}
             </p>
@@ -83,25 +105,37 @@ export default function Categories() {
 
         {!loading &&
           !loadError &&
-          categories.length > 0 && (
+          typedCategories.length > 0 && (
             <ul>
-              {categories.map((category) => (
+              {typedCategories.map((category) => (
                 <li
                   key={category.id}
                   className="flex flex-wrap items-center gap-3 border-b border-ink/5 px-4 py-3 last:border-none sm:px-5"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-ink-2 text-steel-light">
-                    <FaThLarge size={15} />
+                  {/* Category image / fallback icon */}
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden bg-ink-2 text-steel-light">
+                    {category.image ? (
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FaThLarge size={15} />
+                    )}
                   </div>
 
+                  {/* Name */}
                   <span className="min-w-0 shrink-0 basis-[160px] truncate text-[13.5px] font-bold">
                     {category.name}
                   </span>
 
+                  {/* Description */}
                   <span className="min-w-0 flex-1 truncate text-[12.5px] text-steel">
-                    {category.description}
+                    {category.description || "No description"}
                   </span>
 
+                  {/* Status */}
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide ${
                       category.is_active
@@ -114,6 +148,7 @@ export default function Categories() {
                       : "Inactive"}
                   </span>
 
+                  {/* Actions */}
                   <div className="ml-auto flex shrink-0 gap-2">
                     <button
                       type="button"
@@ -168,6 +203,7 @@ export default function Categories() {
             }
             className="w-full max-w-[440px] border border-ink/10 bg-paper"
           >
+            {/* Modal header */}
             <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
               <h3 className="text-[15px] font-extrabold text-ink">
                 {modalMode === "add"
@@ -185,6 +221,7 @@ export default function Categories() {
               </button>
             </div>
 
+            {/* Form */}
             <form
               onSubmit={(event) => {
                 event.preventDefault();
@@ -192,6 +229,7 @@ export default function Categories() {
               }}
               className="flex flex-col gap-4 p-5"
             >
+              {/* Name */}
               <div>
                 <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
                   Name
@@ -212,6 +250,7 @@ export default function Categories() {
                 />
               </div>
 
+              {/* Description */}
               <div>
                 <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
                   Description
@@ -231,6 +270,68 @@ export default function Categories() {
                 />
               </div>
 
+              {/* Image */}
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
+                  Category Image
+                </label>
+
+                <label className="flex cursor-pointer items-center gap-3 border border-dashed border-ink/20 bg-bg px-3 py-3 transition-colors hover:border-ink/40">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-ink-2 text-steel-light">
+                    {draft.image ? (
+                      <img
+                        src={
+                          typeof draft.image === "string"
+                            ? draft.image
+                            : URL.createObjectURL(
+                                draft.image
+                              )
+                        }
+                        alt="Category preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FaImage size={15} />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <span className="block text-[12px] font-bold text-ink">
+                      Choose image
+                    </span>
+
+                    <span className="block truncate text-[10.5px] text-steel">
+                      JPG, PNG or WebP
+                    </span>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file =
+                        event.target.files?.[0] ?? null;
+
+                      updateDraft("image", file);
+                    }}
+                  />
+                </label>
+
+                {draft.image && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDraft("image", null)
+                    }
+                    className="mt-1.5 text-[11px] font-semibold text-steel hover:text-accent-dark"
+                  >
+                    Remove image
+                  </button>
+                )}
+              </div>
+
+              {/* Active */}
               <label className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
                 <input
                   type="checkbox"
@@ -246,17 +347,14 @@ export default function Categories() {
                 Active (visible on storefront)
               </label>
 
-              <p className="text-[11.5px] text-steel">
-                Image upload isn't available here yet —
-                add it via the Django admin for now.
-              </p>
-
+              {/* Form error */}
               {formError && (
                 <p className="border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
                   {formError}
                 </p>
               )}
 
+              {/* Actions */}
               <div className="mt-1 flex gap-3">
                 <button
                   type="button"

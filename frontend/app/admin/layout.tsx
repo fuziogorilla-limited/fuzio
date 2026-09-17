@@ -30,7 +30,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (isLoginPage) {
-      setCheckingAuth(false);
       return;
     }
     const token = localStorage.getItem("access_token");
@@ -38,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.replace("/admin/login");
       return;
     }
-    setCheckingAuth(false);
+    Promise.resolve().then(() => setCheckingAuth(false));
   }, [isLoginPage, router]);
 
   const handleLogout = () => {
