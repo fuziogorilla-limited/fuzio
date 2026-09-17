@@ -173,6 +173,9 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 
 CORS_ALLOWED_ORIGINS = [
+    "https://fuziogorilla.co.ke",
+    "https://www.fuziogorilla.co.ke",
+
     # Local development
     "http://localhost:3000",
     "http://localhost:3001",
@@ -180,8 +183,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
-
-    # Production
-    "https://fuzio-3y0x.onrender.com",
-    "https://fuziogorilla.co.ke",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
