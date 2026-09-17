@@ -33,10 +33,10 @@ ALLOWED_HOSTS = [
     "fuzio.onrender.com",
     "fuzio-3y0x.onrender.com",
     "fuziogorilla.co.ke",
+    "www.fuziogorilla.co.ke",
     "localhost",
-    "127.0.0.1"
+    "127.0.0.1",
 ]
-
 
 # Application definition
 
@@ -172,7 +172,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 
+
+# =========================
+# CORS
+# =========================
+
 CORS_ALLOWED_ORIGINS = [
+    # Production frontend
     "https://fuziogorilla.co.ke",
     "https://www.fuziogorilla.co.ke",
 
@@ -186,3 +192,26 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+# =========================
+# CSRF
+# =========================
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://fuziogorilla.co.ke",
+    "https://www.fuziogorilla.co.ke",
+]
+
+
+# =========================
+# HTTPS / SECURITY
+# =========================
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
