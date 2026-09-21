@@ -31,10 +31,12 @@ DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = [
     "fuzio.onrender.com",
+    "fuzio-3y0x.onrender.com",
+    "fuziogorilla.co.ke",
+    "www.fuziogorilla.co.ke",
     "localhost",
-    "127.0.0.1"
+    "127.0.0.1",
 ]
-
 
 # Application definition
 
@@ -95,12 +97,8 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": env.db("DATABASE_URL")
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -174,12 +172,46 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 
+
+# =========================
+# CORS
+# =========================
+
 CORS_ALLOWED_ORIGINS = [
+    # Production frontend
+    "https://fuziogorilla.co.ke",
+    "https://www.fuziogorilla.co.ke",
+
+    # Local development
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
-
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+
+# =========================
+# CSRF
+# =========================
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://fuziogorilla.co.ke",
+    "https://www.fuziogorilla.co.ke",
+]
+
+
+# =========================
+# HTTPS / SECURITY
+# =========================
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"

@@ -1,7 +1,7 @@
-import AboutPage from "@/components/frontpage/About";
+import About from "@/components/frontpage/About"
 
 export default function Home() {
     return (
-        <AboutPage/>
+        <About/>
     )
 }
