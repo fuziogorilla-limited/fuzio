@@ -58,6 +58,8 @@ class ProductVariantSerializers(serializers.ModelSerializer):
         fields="__all__"
 
 class GuestProductVariantSerializer(serializers.ModelSerializer):
+    color=serializers.StringRelatedField()
+    size=serializers.StringRelatedField()
     class Meta:
         model=ProductVariant
         exclude=["buying_price"]
