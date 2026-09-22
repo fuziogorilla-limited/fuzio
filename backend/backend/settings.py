@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     #apps
     'users',
     'inventory',
-    'orders',
+    # 'orders',
     'corsheaders',
 ]
 
@@ -159,7 +159,7 @@ REST_FRAMEWORK = {
 
 #simplejwt
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
@@ -172,10 +172,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 
-
-# =========================
 # CORS
-# =========================
 
 CORS_ALLOWED_ORIGINS = [
     # Production frontend
@@ -194,19 +191,14 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 
-# =========================
 # CSRF
-# =========================
 
 CSRF_TRUSTED_ORIGINS = [
     "https://fuziogorilla.co.ke",
     "https://www.fuziogorilla.co.ke",
 ]
 
-
-# =========================
 # HTTPS / SECURITY
-# =========================
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
