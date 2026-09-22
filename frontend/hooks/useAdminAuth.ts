@@ -14,7 +14,7 @@ import type {
   ForgotPasswordResponse,
   LoginResponse,
   VerifyCodeResponse,
-} from "@/types/fields";
+} from "@/types/auth";
 
 export const ADMIN_AUTH_MESSAGES = {
   invalidCredentials: "Invalid email or password.",

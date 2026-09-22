@@ -11,7 +11,7 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 
-import { useCart } from "@/context/CartContext";
+// import { useCart } from "@/context/CartContext";
 import { waLink } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -22,7 +22,7 @@ const NAV_LINKS = [
 
 export default function Header() {
   const router = useRouter();
-  const { cartCount, openCart } = useCart();
+  // const { cartCount, openCart } = useCart();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -102,8 +102,8 @@ export default function Header() {
         <div className="ml-auto flex shrink-0 items-center gap-2.5 sm:gap-3.5">
           {/* Mobile menu button */}
 
-
-          {/* Cart */}
+{/* 
+          Cart
           <button
             type="button"
             aria-label="Cart"
@@ -117,7 +117,7 @@ export default function Header() {
                 {cartCount}
               </span>
             )}
-          </button>
+          </button> */}
           <button
               type="button"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}

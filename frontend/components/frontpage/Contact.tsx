@@ -14,7 +14,6 @@ import {
 
 import { SITE } from "@/constants/shared";
 import { waLink } from "@/lib/utils";
-import type { ContactFormData } from "@/types/fields";
 
 const CONTACT = {
   phone: SITE.contact.phone,
@@ -53,7 +52,7 @@ export default function Contact() {
 
     const formData = new FormData(event.currentTarget);
 
-    const data: ContactFormData = {
+    const data = {
       name: String(formData.get("name") || ""),
       phone: String(formData.get("phone") || ""),
       email: String(formData.get("email") || ""),
