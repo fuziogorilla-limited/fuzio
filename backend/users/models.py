@@ -44,7 +44,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     token_time=models.DateTimeField(null=True, blank=True)
     expiry=models.DateTimeField(null=True, blank=True)
 
-    is_superuser=models.BooleanField(default=False)
+    is_active=models.BooleanField(default=True)
     is_staff=models.BooleanField(default=False)
 
     objects=CustomUserManager()
