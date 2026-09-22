@@ -50,7 +50,7 @@ class ProductVariantCreateSerializers(serializers.ModelSerializer):
 
     class Meta:
         model=ProductVariant
-        fields=["product", "color","size","quantity","selling_price","buying_price","sku"]
+        fields=["product", "color","size","quantity","selling_price","buying_price","sku", "is_active"]
 
 class ProductVariantSerializers(serializers.ModelSerializer):
     class Meta:
