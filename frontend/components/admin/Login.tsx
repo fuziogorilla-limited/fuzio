@@ -1,405 +1,406 @@
 "use client";
 
-import {
-  FaArrowLeft,
-  FaEnvelope,
-  FaEye,
-  FaEyeSlash,
-  FaLock,
-  FaShieldAlt,
-  FaSpinner,
-} from "react-icons/fa";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { FaEnvelope, FaLock, FaKey, FaArrowLeft } from "react-icons/fa";
 
-import {
-  ADMIN_AUTH_MESSAGES,
-  useAdminAuth,
-} from "@/hooks/useAdminAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
-export default function AdminLogin() {
-  const {
-    step,
-    setStep,
+type Mode = "login" | "forgot-request" | "forgot-verify" | "forgot-reset" | "forgot-done";
 
-    loading,
-    error,
+export default function Login() {
+    const router = useRouter();
+    const { loading, error, login, forgotPassword, verifyCode, resetPassword } =
+        useAdminAuth();
 
-    email,
-    setEmail,
+    const [mode, setMode] = useState<Mode>("login");
+    const [localError, setLocalError] = useState<string | null>(null);
 
-    password,
-    setPassword,
+    // Login fields
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    showPassword,
-    setShowPassword,
+    // Forgot-password flow fields
+    const [resetEmail, setResetEmail] = useState("");
+    const [code, setCode] = useState("");
+    const [resetToken, setResetToken] = useState<string | null>(null);
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
 
-    resetEmail,
-    setResetEmail,
+    const displayError = localError ?? error;
 
-    code,
-    setCode,
+    const handleLogin = async (e: FormEvent) => {
+        e.preventDefault();
+        setLocalError(null);
 
-    resendCooldown,
+        try {
+            await login({ email, password });
+            router.push("/admin/dashboard");
+        } catch {
+            // error state is already set inside useAdminAuth
+        }
+    };
 
-    resetMessages,
-    handleLogin,
-    handleRequestCode,
-    handleResendCode,
-    handleVerifyCode,
-    backToLogin,
-  } = useAdminAuth();
+    const handleForgotRequest = async (e: FormEvent) => {
+        e.preventDefault();
+        setLocalError(null);
 
-  return (
-    <main className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-ink px-4 py-10">
-      <div className="w-full max-w-[400px]">
+        try {
+            await forgotPassword({ email: resetEmail });
+            setMode("forgot-verify");
+        } catch {
+            // error state is already set inside useAdminAuth
+        }
+    };
 
-        {/* Brand */}
-        <div className="mb-7 flex flex-col items-center gap-2.5">
-          <div className="flex h-11 w-11 items-center justify-center border-2 border-paper bg-accent text-[16px] font-extrabold tracking-tight text-ink">
-            FG
-          </div>
+    const handleVerify = async (e: FormEvent) => {
+        e.preventDefault();
+        setLocalError(null);
 
-          <div className="text-center leading-none">
-            <div className="text-[15px] font-extrabold tracking-wide text-paper">
-              FUZIO GORILLA
+        try {
+            const data = await verifyCode({ email: resetEmail, code });
+            setResetToken(data.access);
+            setMode("forgot-reset");
+        } catch {
+            // error state is already set inside useAdminAuth
+        }
+    };
+
+    const handleReset = async (e: FormEvent) => {
+        e.preventDefault();
+        setLocalError(null);
+
+        if (newPassword.length < 8) {
+            setLocalError("Password must be at least 8 characters");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setLocalError("Passwords don't match");
+            return;
+        }
+
+        if (!resetToken) {
+            setLocalError("Your reset session expired — start again");
+            setMode("forgot-request");
+            return;
+        }
+
+        try {
+            await resetPassword(resetToken, newPassword);
+            setMode("forgot-done");
+        } catch {
+            // error state is already set inside useAdminAuth
+        }
+    };
+
+    const backToLogin = () => {
+        setLocalError(null);
+        setResetEmail("");
+        setCode("");
+        setResetToken(null);
+        setNewPassword("");
+        setConfirmPassword("");
+        setMode("login");
+    };
+
+    return (
+        <div className="flex min-h-dvh w-full items-center justify-center bg-ink px-4 py-10 sm:px-6">
+            <div className="w-full max-w-[400px]">
+                {/* Brand */}
+                <div className="mb-8 flex flex-col items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center border-2 border-paper bg-accent text-[15px] font-black tracking-tight text-ink">
+                        FG
+                    </div>
+
+                    <div className="text-center">
+                        <div className="text-[16px] font-black tracking-tight text-paper">
+                            FUZIO GORILLA
+                        </div>
+                        <div className="mt-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+                            Admin
+                        </div>
+                    </div>
+                </div>
+
+                <div className="border border-paper/10 bg-paper p-7 sm:p-8">
+                    {mode === "login" && (
+                        <>
+                            <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
+                                Sign in
+                            </h1>
+                            <p className="mb-6 text-[13px] text-steel">
+                                Manage products, orders and categories.
+                            </p>
+
+                            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                                <Field
+                                    label="Email"
+                                    icon={<FaEnvelope size={12} />}
+                                    type="email"
+                                    value={email}
+                                    onChange={setEmail}
+                                    placeholder="you@fuziogorilla.co.ke"
+                                    autoComplete="username"
+                                    required
+                                />
+
+                                <Field
+                                    label="Password"
+                                    icon={<FaLock size={12} />}
+                                    type="password"
+                                    value={password}
+                                    onChange={setPassword}
+                                    placeholder="••••••••"
+                                    autoComplete="current-password"
+                                    required
+                                />
+
+                                {displayError && <ErrorNote message={displayError} />}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="mt-1 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {loading ? "Signing in..." : "Sign In"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setLocalError(null);
+                                        setResetEmail(email);
+                                        setMode("forgot-request");
+                                    }}
+                                    className="text-center text-[12.5px] font-semibold text-steel transition-colors hover:text-accent-dark"
+                                >
+                                    Forgot your password?
+                                </button>
+                            </form>
+                        </>
+                    )}
+
+                    {mode === "forgot-request" && (
+                        <>
+                            <BackButton onClick={backToLogin} />
+
+                            <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
+                                Reset password
+                            </h1>
+                            <p className="mb-6 text-[13px] text-steel">
+                                Enter your account email and we&apos;ll send a
+                                6-digit code.
+                            </p>
+
+                            <form
+                                onSubmit={handleForgotRequest}
+                                className="flex flex-col gap-4"
+                            >
+                                <Field
+                                    label="Email"
+                                    icon={<FaEnvelope size={12} />}
+                                    type="email"
+                                    value={resetEmail}
+                                    onChange={setResetEmail}
+                                    placeholder="you@fuziogorilla.co.ke"
+                                    autoComplete="username"
+                                    required
+                                />
+
+                                {displayError && <ErrorNote message={displayError} />}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="mt-1 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {loading ? "Sending..." : "Send Reset Code"}
+                                </button>
+                            </form>
+                        </>
+                    )}
+
+                    {mode === "forgot-verify" && (
+                        <>
+                            <BackButton onClick={() => setMode("forgot-request")} />
+
+                            <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
+                                Enter code
+                            </h1>
+                            <p className="mb-6 text-[13px] text-steel">
+                                We sent a 6-digit code to{" "}
+                                <span className="font-semibold text-ink">
+                                    {resetEmail}
+                                </span>
+                                . It expires in 5 minutes.
+                            </p>
+
+                            <form onSubmit={handleVerify} className="flex flex-col gap-4">
+                                <Field
+                                    label="Reset Code"
+                                    icon={<FaKey size={12} />}
+                                    type="text"
+                                    value={code}
+                                    onChange={(v) =>
+                                        setCode(v.replace(/\D/g, "").slice(0, 6))
+                                    }
+                                    placeholder="000000"
+                                    autoComplete="one-time-code"
+                                    required
+                                    mono
+                                />
+
+                                {displayError && <ErrorNote message={displayError} />}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading || code.length !== 6}
+                                    className="mt-1 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {loading ? "Verifying..." : "Verify Code"}
+                                </button>
+                            </form>
+                        </>
+                    )}
+
+                    {mode === "forgot-reset" && (
+                        <>
+                            <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
+                                Set a new password
+                            </h1>
+                            <p className="mb-6 text-[13px] text-steel">
+                                Choose a new password for your admin account.
+                            </p>
+
+                            <form onSubmit={handleReset} className="flex flex-col gap-4">
+                                <Field
+                                    label="New Password"
+                                    icon={<FaLock size={12} />}
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={setNewPassword}
+                                    placeholder="At least 8 characters"
+                                    autoComplete="new-password"
+                                    required
+                                />
+
+                                <Field
+                                    label="Confirm Password"
+                                    icon={<FaLock size={12} />}
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={setConfirmPassword}
+                                    placeholder="Re-enter password"
+                                    autoComplete="new-password"
+                                    required
+                                />
+
+                                {displayError && <ErrorNote message={displayError} />}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="mt-1 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {loading ? "Saving..." : "Save New Password"}
+                                </button>
+                            </form>
+                        </>
+                    )}
+
+                    {mode === "forgot-done" && (
+                        <div className="text-center">
+                            <h1 className="mb-2 text-xl font-black tracking-tight text-ink">
+                                Password updated
+                            </h1>
+                            <p className="mb-6 text-[13px] leading-relaxed text-steel">
+                                Your password has been reset. Sign in with your
+                                new password.
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={backToLogin}
+                                className="w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink"
+                            >
+                                Back to Sign In
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
+        </div>
+    );
+}
 
-            <div className="mt-1 font-mono text-[9px] tracking-[0.13em] text-accent">
-              ADMIN PANEL
+/* -------------------------------------------------------------------------- */
+/*  Small pieces                                                              */
+/* -------------------------------------------------------------------------- */
+
+function Field({
+    label,
+    icon,
+    type,
+    value,
+    onChange,
+    placeholder,
+    autoComplete,
+    required,
+    mono,
+}: {
+    label: string;
+    icon: React.ReactNode;
+    type: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    autoComplete?: string;
+    required?: boolean;
+    mono?: boolean;
+}) {
+    return (
+        <label className="block">
+            <span className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                {label}
+            </span>
+
+            <div className="flex items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 transition-colors focus-within:border-ink">
+                <span className="shrink-0 text-steel">{icon}</span>
+
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    autoComplete={autoComplete}
+                    required={required}
+                    className={`w-full bg-transparent text-[13.5px] text-ink outline-none placeholder:text-steel ${
+                        mono ? "font-mono tracking-[0.3em]" : ""
+                    }`}
+                />
             </div>
-          </div>
+        </label>
+    );
+}
+
+function ErrorNote({ message }: { message: string }) {
+    return (
+        <div className="border-l-4 border-accent bg-accent/10 px-3.5 py-2.5 text-[12.5px] font-semibold text-accent-dark">
+            {message}
         </div>
+    );
+}
 
-        {/* Auth card */}
-        <div className="border border-white/10 bg-paper p-7">
-
-          {/* Login */}
-          {step === "login" && (
-            <>
-              <h1 className="mb-1 text-xl font-extrabold text-ink">
-                Admin Sign In
-              </h1>
-
-              <p className="mb-6 text-[13px] text-steel">
-                Enter your credentials to
-                access the dashboard.
-              </p>
-
-              <form
-                onSubmit={handleLogin}
-                className="flex flex-col gap-4"
-              >
-                {/* Email */}
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                    Email Address
-                  </span>
-
-                  <div className="flex min-w-0 items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 focus-within:border-ink">
-                    <FaEnvelope
-                      className="shrink-0 text-steel"
-                      size={13}
-                    />
-
-                    <input
-                      type="email"
-                      required
-                      autoComplete="email"
-                      value={email}
-                      onChange={(event) =>
-                        setEmail(
-                          event.target.value
-                        )
-                      }
-                      placeholder={
-                        ADMIN_AUTH_MESSAGES.emailPlaceholder
-                      }
-                      className="w-full min-w-0 bg-transparent text-[13.5px] outline-none"
-                    />
-                  </div>
-                </label>
-
-                {/* Password */}
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                    Password
-                  </span>
-
-                  <div className="flex min-w-0 items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 focus-within:border-ink">
-                    <FaLock
-                      className="shrink-0 text-steel"
-                      size={13}
-                    />
-
-                    <input
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
-                      required
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(event) =>
-                        setPassword(
-                          event.target.value
-                        )
-                      }
-                      placeholder={
-                        ADMIN_AUTH_MESSAGES.passwordPlaceholder
-                      }
-                      className="w-full min-w-0 bg-transparent text-[13.5px] outline-none"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          (current) =>
-                            !current
-                        )
-                      }
-                      aria-label={
-                        showPassword
-                          ? "Hide password"
-                          : "Show password"
-                      }
-                      className="shrink-0 text-steel hover:text-ink"
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash size={14} />
-                      ) : (
-                        <FaEye size={14} />
-                      )}
-                    </button>
-                  </div>
-                </label>
-
-                {/* Forgot password */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    resetMessages();
-                    setStep(
-                      "forgot-email"
-                    );
-                  }}
-                  className="self-end text-[12px] font-semibold text-accent-dark hover:text-ink"
-                >
-                  Forgot password?
-                </button>
-
-                {/* Error */}
-                {error && (
-                  <p className="border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
-                    {error}
-                  </p>
-                )}
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-1 flex items-center justify-center gap-2 border-2 border-ink bg-ink py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading && (
-                    <FaSpinner
-                      className="animate-spin"
-                      size={13}
-                    />
-                  )}
-
-                  {loading
-                    ? "Please wait…"
-                    : "Sign In"}
-                </button>
-              </form>
-            </>
-          )}
-
-          {/* Forgot password — email */}
-          {step === "forgot-email" && (
-            <>
-              <button
-                type="button"
-                onClick={backToLogin}
-                className="flex items-center gap-1.5 text-[12px] font-semibold text-steel hover:text-ink"
-              >
-                <FaArrowLeft size={11} />
-                Back to sign in
-              </button>
-
-              <h1 className="mb-1 mt-3 text-xl font-extrabold text-ink">
-                Reset Password
-              </h1>
-
-              <p className="mb-6 text-[13px] text-steel">
-                Enter your admin email and
-                we&apos;ll send you a
-                verification code.
-              </p>
-
-              <form
-                onSubmit={handleRequestCode}
-                className="flex flex-col gap-4"
-              >
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                    Email Address
-                  </span>
-
-                  <div className="flex min-w-0 items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 focus-within:border-ink">
-                    <FaEnvelope
-                      className="shrink-0 text-steel"
-                      size={13}
-                    />
-
-                    <input
-                      type="email"
-                      required
-                      autoComplete="email"
-                      value={resetEmail}
-                      onChange={(event) =>
-                        setResetEmail(
-                          event.target.value
-                        )
-                      }
-                      placeholder={
-                        ADMIN_AUTH_MESSAGES.emailPlaceholder
-                      }
-                      className="w-full min-w-0 bg-transparent text-[13.5px] outline-none"
-                    />
-                  </div>
-                </label>
-
-                {error && (
-                  <p className="border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-1 flex items-center justify-center gap-2 border-2 border-ink bg-ink py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading && (
-                    <FaSpinner
-                      className="animate-spin"
-                      size={13}
-                    />
-                  )}
-
-                  {loading
-                    ? "Please wait…"
-                    : "Send Code"}
-                </button>
-              </form>
-            </>
-          )}
-
-          {/* Forgot password — verification code */}
-          {step === "forgot-code" && (
-            <>
-              <button
-                type="button"
-                onClick={backToLogin}
-                className="flex items-center gap-1.5 text-[12px] font-semibold text-steel hover:text-ink"
-              >
-                <FaArrowLeft size={11} />
-                Back to sign in
-              </button>
-
-              <h1 className="mb-1 mt-3 text-xl font-extrabold text-ink">
-                Enter Verification Code
-              </h1>
-
-              <p className="mb-6 text-[13px] text-steel">
-                We sent a 6-digit code to{" "}
-                <span className="font-semibold text-ink">
-                  {resetEmail}
-                </span>
-                .
-              </p>
-
-              <form
-                onSubmit={handleVerifyCode}
-                className="flex flex-col gap-4"
-              >
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                    Verification Code
-                  </span>
-
-                  <div className="flex min-w-0 items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 focus-within:border-ink">
-                    <FaShieldAlt
-                      className="shrink-0 text-steel"
-                      size={13}
-                    />
-
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      required
-                      autoComplete="one-time-code"
-                      value={code}
-                      onChange={(event) =>
-                        setCode(
-                          event.target.value.replace(
-                            /\D/g,
-                            ""
-                          )
-                        )
-                      }
-                      placeholder={
-                        ADMIN_AUTH_MESSAGES.codePlaceholder
-                      }
-                      className="w-full min-w-0 bg-transparent font-mono text-[15px] tracking-[0.3em] outline-none"
-                    />
-                  </div>
-                </label>
-
-                {error && (
-                  <p className="border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-1 flex items-center justify-center gap-2 border-2 border-ink bg-ink py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading && (
-                    <FaSpinner
-                      className="animate-spin"
-                      size={13}
-                    />
-                  )}
-
-                  {loading
-                    ? "Please wait…"
-                    : "Verify Code"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleResendCode}
-                  disabled={
-                    resendCooldown > 0 ||
-                    loading
-                  }
-                  className="text-center text-[12px] font-semibold text-accent-dark hover:text-ink disabled:cursor-not-allowed disabled:text-steel-light"
-                >
-                  {resendCooldown > 0
-                    ? `Resend code in ${resendCooldown}s`
-                    : "Resend code"}
-                </button>
-              </form>
-            </>
-          )}
-        </div>
-      </div>
-    </main>
-  );
+function BackButton({ onClick }: { onClick: () => void }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="mb-4 inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-steel transition-colors hover:text-accent-dark"
+        >
+            <FaArrowLeft size={10} />
+            Back
+        </button>
+    );
 }

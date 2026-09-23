@@ -93,7 +93,7 @@ export default function Home() {
               {/* Hero buttons */}
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
-                  href="/products"
+                  href="/all-products"
                   className="group inline-flex items-center gap-2 bg-accent px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-paper"
                 >
                   Shop Products
@@ -439,7 +439,7 @@ export default function Home() {
           {/* CTA buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/products"
+              href="/all-products"
               className="group inline-flex items-center gap-2 border-2 border-ink bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-paper hover:text-ink"
             >
               Shop Products

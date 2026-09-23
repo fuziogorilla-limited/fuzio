@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   FaWhatsapp,
@@ -8,19 +10,18 @@ import {
 
 import { SITE } from "@/constants/shared";
 import { waLink } from "@/lib/utils";
+import { usePublicCategories } from "@/hooks/useInventory";
 
-const FOOTER_CATEGORIES = [
-  { id: "workwear", name: "Workwear" },
-  { id: "ppe", name: "PPE & Safety" },
-  { id: "waste", name: "Waste Management" },
-  { id: "cleaning", name: "Cleaning" },
-  { id: "storage", name: "Storage" },
-] as const;
+const MAX_FOOTER_CATEGORIES = 5;
 
 const FOOTER_WHATSAPP_MESSAGE =
   "Hello Fuzio Gorilla, I'd like to ask about your products.";
 
 export default function Footer() {
+  const { categories, loading: categoriesLoading } = usePublicCategories();
+
+  const footerCategories = categories.slice(0, MAX_FOOTER_CATEGORIES);
+
   return (
     <footer className="w-full overflow-x-hidden bg-ink pt-11 pb-5 text-steel-light">
       <div className="mx-auto w-full max-w-[1240px] px-4 sm:px-6">
@@ -49,7 +50,7 @@ export default function Footer() {
 
             <nav className="flex flex-col gap-2.5 text-[13px]">
               <Link
-                href="/shop"
+                href="/all-products"
                 className="transition-colors hover:text-accent"
               >
                 Shop
@@ -78,15 +79,30 @@ export default function Footer() {
             </h5>
 
             <nav className="flex flex-col gap-2.5 text-[13px]">
-              {FOOTER_CATEGORIES.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/category/${category.id}`}
-                  className="truncate transition-colors hover:text-accent"
-                >
-                  {category.name}
-                </Link>
-              ))}
+              {categoriesLoading &&
+                Array.from({ length: MAX_FOOTER_CATEGORIES }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[13px] w-20 animate-pulse bg-paper/10"
+                  />
+                ))}
+
+              {!categoriesLoading && footerCategories.length === 0 && (
+                <span className="text-[13px] text-steel">
+                  Categories coming soon
+                </span>
+              )}
+
+              {!categoriesLoading &&
+                footerCategories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/category/${category.id}`}
+                    className="truncate transition-colors hover:text-accent"
+                  >
+                    {category.name}
+                  </Link>
+                ))}
             </nav>
           </div>
 

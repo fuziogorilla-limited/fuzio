@@ -579,7 +579,7 @@ export default function Contact() {
           </h2>
 
           <Link
-            href="/products"
+            href="/all-products"
             className="group mt-5 inline-flex items-center gap-2 border-2 border-accent px-6 py-3 text-[12px] font-bold uppercase tracking-wide text-accent transition-colors hover:bg-accent hover:text-ink"
           >
             Browse Products
