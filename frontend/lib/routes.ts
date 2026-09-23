@@ -35,6 +35,25 @@ const routes = {
         publicCategories: "/api/inventory/guest/category/",
         guestProductVariants: "/api/inventory/guest/product/variants/",
     },
+
+    orders: {
+        // Guest — cart
+        createCart: "/api/orders/carts/",
+        cartItems: (cartId: string) => `/api/orders/carts/${cartId}/items/`,
+        cartDetail: (cartId: string) => `/api/orders/carts/${cartId}/`,
+
+        // Guest — orders
+        createOrder: "/api/orders/orders/",
+        orderDetail: (orderNumber: string, token: string) =>
+            `/api/orders/orders/${orderNumber}/?token=${encodeURIComponent(
+                token
+            )}`,
+
+        // Admin
+        adminOrders: "/api/orders/admin/orders/",
+        adminUpdateOrderStatus: (pk: number) =>
+            `/api/orders/admin/orders/${pk}/`,
+    },
 };
 
 export default routes;

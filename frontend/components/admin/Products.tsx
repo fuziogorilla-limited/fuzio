@@ -291,7 +291,9 @@ const emptyVariantForm: VariantFormState = {
     quantity: 0,
     selling_price: "",
     buying_price: "",
-    is_active: false,
+    // Defaults to Active — the old model default of False meant every new
+    // variant was invisible to guests until someone remembered to flip it.
+    is_active: true,
 };
 
 function VariantForm({
@@ -305,7 +307,9 @@ function VariantForm({
     colors: { id: ID; name: string }[];
     sizes: { id: ID; name: string }[];
     onCancel: () => void;
-    onSubmit: (input: Omit<ProductVariantCreateInput, "product">) => Promise<void>;
+    onSubmit: (
+        input: Omit<ProductVariantCreateInput, "product">
+    ) => Promise<void>;
 }) {
     const [form, setForm] = useState<VariantFormState>(initial);
     const [saving, setSaving] = useState(false);
@@ -330,6 +334,7 @@ function VariantForm({
                 quantity: Number(form.quantity),
                 selling_price: form.selling_price,
                 buying_price: form.buying_price,
+                is_active: form.is_active,
             });
         } catch (err) {
             setError(
@@ -457,6 +462,40 @@ function VariantForm({
                         }
                     />
                 </div>
+            </div>
+
+            {/* Status */}
+            <div className="mb-6">
+                <label className={labelClass}>Status</label>
+                <div className="flex gap-6">
+                    <label className="flex items-center gap-2 text-sm font-semibold text-ink">
+                        <input
+                            type="radio"
+                            name="variant-status"
+                            checked={form.is_active}
+                            onChange={() =>
+                                setForm((f) => ({ ...f, is_active: true }))
+                            }
+                        />
+                        Active
+                    </label>
+
+                    <label className="flex items-center gap-2 text-sm font-semibold text-ink">
+                        <input
+                            type="radio"
+                            name="variant-status"
+                            checked={!form.is_active}
+                            onChange={() =>
+                                setForm((f) => ({ ...f, is_active: false }))
+                            }
+                        />
+                        Inactive
+                    </label>
+                </div>
+                <p className="mt-1.5 text-[11.5px] text-steel">
+                    Inactive variants are hidden from guests and can&apos;t be
+                    ordered, even if the product itself is active.
+                </p>
             </div>
 
             <div className="flex justify-end gap-3">

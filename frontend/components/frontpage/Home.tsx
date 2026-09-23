@@ -8,9 +8,15 @@ import {
   FaBoxOpen,
   FaShieldAlt,
   FaTruck,
+  FaLayerGroup,
 } from "react-icons/fa";
 
 import { waLink, mediaUrl, formatPrice } from "@/lib/utils";
+import {
+  usePublicCategories,
+  usePublicProducts,
+  usePublicProductVariants,
+} from "@/hooks/useInventory";
 
 const WHY_US = [
   { tag: "01", title: "Durable by design", body: "Products selected for demanding working environments, not desk jobs." },
@@ -18,7 +24,23 @@ const WHY_US = [
   { tag: "03", title: "One reliable source", body: "Workwear, PPE, cleaning, waste management and everyday industrial essentials in one place." },
 ] as const;
 
+const MAX_CATEGORIES = 8;
+const MAX_FEATURED = 8;
+
 export default function Home() {
+  const { categories, loading: categoriesLoading } = usePublicCategories();
+  const { products, loading: productsLoading } = usePublicProducts();
+  const {
+    variants,
+    loading: variantsLoading,
+    lowestPriceFor,
+  } = usePublicProductVariants();
+
+  const visibleCategories = categories.slice(0, MAX_CATEGORIES);
+  const featuredProducts = products
+    .filter((p) => p.feature)
+    .slice(0, MAX_FEATURED);
+
   return (
     <main className="w-full overflow-x-hidden bg-bg">
       <section className="relative h-[calc(100dvh-72px)] w-full overflow-hidden bg-ink text-paper">
@@ -170,6 +192,194 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* =========================================================
+          SHOP BY CATEGORY
+          Card layout: fixed-height visual block on top (image or
+          fallback icon on an ink background with a hazard-stripe
+          foot), separate bordered info panel below with title and
+          a "Shop Now" link — matches the reference card shape.
+      ========================================================= */}
+      {(categoriesLoading || visibleCategories.length > 0) && (
+        <section className="px-4 py-14 sm:px-6 sm:py-20">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
+                  Shop by Category
+                </div>
+
+                <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+                  Everything the job needs.
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {categoriesLoading &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="border border-ink/10 bg-paper">
+                    <div className="h-[118px] animate-pulse bg-ink/5" />
+                    <div className="space-y-2 p-4">
+                      <div className="h-4 w-3/4 animate-pulse bg-ink/5" />
+                      <div className="h-3 w-1/2 animate-pulse bg-ink/5" />
+                    </div>
+                  </div>
+                ))}
+
+              {!categoriesLoading &&
+                visibleCategories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/category/${category.id}`}
+                    className="group flex flex-col border border-ink/10 bg-paper transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(21,20,15,0.12)]"
+                  >
+                    <div className="relative h-[118px] w-full overflow-hidden bg-ink">
+                      {category.image ? (
+                        <Image
+                          src={mediaUrl(category.image)!}
+                          alt={category.name}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="object-cover opacity-85 transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-steel-light">
+                          <FaLayerGroup size={28} />
+                        </div>
+                      )}
+
+                      <div className="absolute inset-x-0 bottom-0 h-[5px] bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_8px,var(--color-ink)_8px_16px)]" />
+                    </div>
+
+                    <div className="flex flex-1 flex-col p-4">
+                      <h3 className="text-[16px] font-black leading-tight tracking-tight text-ink">
+                        {category.name}
+                      </h3>
+
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 font-mono text-[11.5px] font-bold uppercase tracking-[0.06em] text-accent-dark group-hover:text-ink">
+                        Shop Now
+                        <FaArrowRight
+                          size={9}
+                          className="transition-transform group-hover:translate-x-1"
+                        />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================
+          FEATURED PRODUCTS
+          Card layout: square image block with an "In Stock" tag,
+          separate bordered info panel below with name, description,
+          price, and a "View Product" link — matches the reference
+          product card shape.
+      ========================================================= */}
+      {(productsLoading || featuredProducts.length > 0) && (
+        <section className="border-t border-ink/10 bg-paper px-4 py-14 sm:px-6 sm:py-20">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
+                  Featured Products
+                </div>
+
+                <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+                  Ready to move, ready to ship.
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {productsLoading &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="border border-ink/10 bg-paper">
+                    <div className="aspect-square animate-pulse bg-ink/5" />
+                    <div className="space-y-2 p-3.5">
+                      <div className="h-4 w-4/5 animate-pulse bg-ink/5" />
+                      <div className="h-3 w-2/5 animate-pulse bg-ink/5" />
+                    </div>
+                  </div>
+                ))}
+
+              {!productsLoading &&
+                featuredProducts.map((product) => {
+                  const price = lowestPriceFor(product.id);
+
+                  const inStock = variantsLoading
+                    ? false
+                    : variants.some(
+                        (v) =>
+                          v.product === product.id &&
+                          v.is_active &&
+                          v.quantity > 0
+                      );
+
+                  return (
+                    <Link
+                      key={product.id}
+                      href={`/product/${product.id}`}
+                      className="group flex flex-col border border-ink/10 bg-paper transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_10px_22px_rgba(21,20,15,0.10)]"
+                    >
+                      <div className="relative aspect-square overflow-hidden bg-ink-2">
+                        {inStock && (
+                          <span className="absolute left-2 top-2 z-10 bg-paper px-1.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.05em] text-green">
+                            In Stock
+                          </span>
+                        )}
+
+                        {product.image ? (
+                          <Image
+                            src={mediaUrl(product.image)!}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-steel">
+                            <FaBoxOpen size={22} />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-1 flex-col p-3.5">
+                        <h3 className="text-[13.5px] font-bold leading-snug text-ink line-clamp-2">
+                          {product.name}
+                        </h3>
+
+                        {product.description && (
+                          <p className="mt-1 text-[11.5px] leading-relaxed text-steel line-clamp-2">
+                            {product.description}
+                          </p>
+                        )}
+
+                        <p className="mt-auto pt-2.5 font-mono text-[14.5px] font-bold text-ink">
+                          {price !== null
+                            ? formatPrice(price)
+                            : "Enquire for pricing"}
+                        </p>
+
+                        <span className="mt-2.5 inline-flex items-center gap-1.5 font-mono text-[11.5px] font-bold uppercase tracking-[0.06em] text-accent-dark group-hover:text-ink">
+                          View Product
+                          <FaArrowRight
+                            size={9}
+                            className="transition-transform group-hover:translate-x-1"
+                          />
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* =========================================================
           WHY FUZIO GORILLA
       ========================================================= */}

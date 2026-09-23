@@ -1,5 +1,11 @@
 import Product from "@/components/frontpage/Product";
 
-export default function ProductPage() {
-  return <Product />;
+interface ProductPageProps {
+    params: Promise<{ id: string }>;
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+    const { id } = await params;
+
+    return <Product productId={id} />;
 }

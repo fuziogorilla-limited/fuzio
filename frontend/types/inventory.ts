@@ -85,6 +85,7 @@ export interface ProductVariantCreateInput {
     selling_price: number | string;
     buying_price: number | string;
     sku: string;
+    is_active?: boolean;
 }
 
 // Guest (public) shapes
@@ -92,8 +93,22 @@ export interface ProductVariantCreateInput {
 /** GuestProductSerializer -> Product minus `date_added` */
 export type GuestProduct = Omit<ProductPayload, "date_added">;
 
-/** GuestProductVariantSerializer -> ProductVariant minus `buying_price` */
-export type GuestProductVariant = Omit<ProductVariantPayload, "buying_price">;
+/**
+ * GuestProductVariantSerializer -> ProductVariant minus `buying_price`,
+ * with `color` / `size` resolved to their display names (StringRelatedField
+ * on the backend) rather than raw foreign-key ids — guests have no way to
+ * look those ids up themselves since /color/ and /size/ are admin-only.
+ */
+export interface GuestProductVariant {
+    id: ID;
+    product: ID;
+    color: string;
+    size: string;
+    sku: string;
+    quantity: number;
+    selling_price: string;
+    is_active: boolean;
+}
 
 // Envelope shapes returned by the admin endpoints
 /** POST / PATCH responses: `{ message, data }` */

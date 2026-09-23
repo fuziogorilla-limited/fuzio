@@ -17,6 +17,8 @@ import type {
     ProductCreateInput,
     ProductVariantPayload,
     ProductVariantCreateInput,
+    GuestProduct,
+    GuestProductVariant,
 } from "@/types/inventory";
 
 /* -------------------------------------------------------------------------- */
@@ -430,6 +432,111 @@ export function useProductVariants() {
         deleteVariant,
         variantsForProduct,
     };
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Public / guest-facing reads                                               */
+/*  (AllowAny endpoints — no auth token required, safe for the storefront)    */
+/* -------------------------------------------------------------------------- */
+
+export function usePublicCategories() {
+    const [categories, setCategories] = useState<CategoryPayload[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchCategories = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const data = await apiFetch<CategoryPayload[]>(
+                routes.inventory.publicCategories,
+                { skipAuth: true }
+            );
+            setCategories(data);
+        } catch (err) {
+            setError(getErrorMessage(err, "Failed to load categories"));
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
+
+    return { categories, loading, error, fetchCategories };
+}
+
+export function usePublicProducts() {
+    const [products, setProducts] = useState<GuestProduct[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchProducts = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const data = await apiFetch<GuestProduct[]>(
+                routes.inventory.guestProducts,
+                { skipAuth: true }
+            );
+            setProducts(data);
+        } catch (err) {
+            setError(getErrorMessage(err, "Failed to load products"));
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    return { products, loading, error, fetchProducts };
+}
+
+export function usePublicProductVariants() {
+    const [variants, setVariants] = useState<GuestProductVariant[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchVariants = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const data = await apiFetch<GuestProductVariant[]>(
+                routes.inventory.guestProductVariants,
+                { skipAuth: true }
+            );
+            setVariants(data);
+        } catch (err) {
+            setError(getErrorMessage(err, "Failed to load product variants"));
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    /** Lowest active selling price for a product, or null if none priced yet. */
+    const lowestPriceFor = useCallback(
+        (productId: ID): number | null => {
+            const prices = variants
+                .filter((v) => v.product === productId && v.is_active)
+                .map((v) => Number(v.selling_price))
+                .filter((n) => !Number.isNaN(n));
+
+            return prices.length ? Math.min(...prices) : null;
+        },
+        [variants]
+    );
+
+    useEffect(() => {
+        fetchVariants();
+    }, [fetchVariants]);
+
+    return { variants, loading, error, fetchVariants, lowestPriceFor };
 }
 
 /* -------------------------------------------------------------------------- */
