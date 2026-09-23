@@ -1,381 +1,467 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
-  FaBoxOpen,
-  FaWhatsapp,
+    FaBoxOpen,
+    FaWhatsapp,
+    FaCheckCircle,
+    FaTimesCircle,
 } from "react-icons/fa";
 
+import {
+    usePublicCategories,
+    usePublicProducts,
+    usePublicProductVariants,
+} from "@/hooks/useInventory";
 import { useCart } from "@/context/CartContext";
-import { useProductData } from "@/hooks/useProducts";
 import { formatPrice, mediaUrl, waLink } from "@/lib/utils";
 
-const PRODUCT = {
-  imageUnavailable: "Product photos aren't available yet",
-  loadError: "Couldn't load this product right now. Please try again shortly.",
-  notFound: "We couldn't find that product.",
-} as const;
+/** Ordered de-dupe — keeps first-seen order instead of alphabetising. */
+function uniqueInOrder(values: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
 
-export default function Product() {
-  const params = useParams();
-  const router = useRouter();
-
-  const productId = Number(params.id);
-
-  const { addToCart, openCart } = useCart();
-
-  const {
-    product,
-    category,
-    loading,
-    error,
-    notFound,
-  } = useProductData(productId);
-
-  const [qty, setQty] = useState(1);
-
-  const changeQty = (delta: number) => {
-    setQty((current) =>
-      Math.max(1, current + delta)
-    );
-  };
-
-  const handleAddToCart = () => {
-    if (!product) return;
-
-    const variant = product.variants[0];
-    if (!variant) return;
-
-    addToCart({
-      pid: String(variant.id),
-      name: product.name,
-      price: Number(product.selling_price),
-      size: product.variants[0]?.size || null,
-      color: product.variants[0]?.color || null,
-      qty,
+    values.forEach((v) => {
+        if (v && !seen.has(v)) {
+            seen.add(v);
+            result.push(v);
+        }
     });
 
-    openCart();
-  };
+    return result;
+}
 
-  const handleBuyNow = () => {
-    if (!product) return;
+export default function Product({ productId }: { productId: string }) {
+    const id = Number(productId);
+    const router = useRouter();
+    const { addItem } = useCart();
 
-    const variant = product.variants[0];
-    if (!variant) return;
+    const { categories, loading: categoriesLoading } = usePublicCategories();
+    const { products, loading: productsLoading } = usePublicProducts();
+    const {
+        variants,
+        loading: variantsLoading,
+        lowestPriceFor,
+    } = usePublicProductVariants();
 
-    addToCart({
-      pid: String(variant.id),
-      name: product.name,
-      price: Number(product.selling_price),
-      size: product.variants[0]?.size || null,
-      color: product.variants[0]?.color || null,
-      qty,
-    });
+    const product = products.find((p) => p.id === id);
+    const category = product
+        ? categories.find((c) => c.id === product.category)
+        : undefined;
 
-    router.push("/checkout");
-  };
+    const productVariants = useMemo(
+        () => variants.filter((v) => v.product === id),
+        [variants, id]
+    );
 
-  const handleWhatsAppOrder = () => {
-    if (!product) return;
+    // Only variants that are actually sellable right now.
+    const activeVariants = useMemo(
+        () => productVariants.filter((v) => v.is_active && v.quantity > 0),
+        [productVariants]
+    );
 
-    let message =
-      `Hello Fuzio Gorilla,\n\n` +
-      `I would like to place an order.\n\n` +
-      `Product:\n${product.name}\n`;
+    const availableSizes = useMemo(
+        () => uniqueInOrder(activeVariants.map((v) => v.size)),
+        [activeVariants]
+    );
+    const availableColors = useMemo(
+        () => uniqueInOrder(activeVariants.map((v) => v.color)),
+        [activeVariants]
+    );
 
-    if (product.variants[0]?.size) {
-      message += `\nSize:\n${product.variants[0].size}\n`;
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedColor, setSelectedColor] = useState<string | null>(null);
+    const [qty, setQty] = useState(1);
+
+    // Seed the selection once we know what's actually available.
+    useEffect(() => {
+        if (availableSizes.length && !selectedSize) {
+            setSelectedSize(availableSizes[0]);
+        }
+        if (availableColors.length && !selectedColor) {
+            setSelectedColor(availableColors[0]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [availableSizes, availableColors]);
+
+    const matchedVariant = useMemo(
+        () =>
+            activeVariants.find(
+                (v) =>
+                    (!availableSizes.length || v.size === selectedSize) &&
+                    (!availableColors.length || v.color === selectedColor)
+            ) ?? null,
+        [
+            activeVariants,
+            selectedSize,
+            selectedColor,
+            availableSizes,
+            availableColors,
+        ]
+    );
+
+    // Keep the quantity stepper inside whatever's actually in stock.
+    useEffect(() => {
+        if (matchedVariant) {
+            setQty((q) => Math.min(Math.max(q, 1), matchedVariant.quantity));
+        } else {
+            setQty(1);
+        }
+    }, [matchedVariant]);
+
+    const loading = productsLoading || variantsLoading || categoriesLoading;
+
+    if (!productsLoading && !product) {
+        return (
+            <div className="px-4 py-20 text-center sm:px-6">
+                <div className="mx-auto max-w-[1240px]">
+                    <FaBoxOpen
+                        size={28}
+                        className="mx-auto mb-4 text-steel"
+                    />
+
+                    <h1 className="text-xl font-black tracking-tight text-ink">
+                        Product not found
+                    </h1>
+
+                    <p className="mt-2 text-sm text-steel">
+                        This product may have been removed or is no longer
+                        available.
+                    </p>
+
+                    <Link
+                        href="/"
+                        className="mt-6 inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark"
+                    >
+                        Back to Home
+                    </Link>
+                </div>
+            </div>
+        );
     }
 
-    if (product.variants[0]?.color) {
-      message += `\nColour:\n${product.variants[0].color}\n`;
+    if (loading || !product) {
+        return (
+            <div className="px-4 py-10 sm:px-6 sm:py-14">
+                <div className="mx-auto grid max-w-[1240px] gap-10 md:grid-cols-2 md:gap-12">
+                    <div className="aspect-square animate-pulse bg-ink/5" />
+                    <div className="space-y-4">
+                        <div className="h-8 w-3/4 animate-pulse bg-ink/5" />
+                        <div className="h-6 w-1/3 animate-pulse bg-ink/5" />
+                        <div className="h-24 w-full animate-pulse bg-ink/5" />
+                    </div>
+                </div>
+            </div>
+        );
     }
 
-    message +=
-      `\nQuantity:\n${qty}\n\n` +
-      `Total:\n${formatPrice(
-        Number(product.selling_price) * qty
-      )}\n\n` +
-      `Please confirm my order and delivery details.`;
+    const inStock = Boolean(matchedVariant && matchedVariant.quantity > 0);
+    const displayPrice = matchedVariant
+        ? Number(matchedVariant.selling_price)
+        : lowestPriceFor(product.id);
 
-    window.open(
-      waLink(message),
-      "_blank"
-    );
-  };
+    const changeQty = (delta: number) => {
+        setQty((q) => {
+            const max = matchedVariant?.quantity ?? 1;
+            return Math.min(Math.max(q + delta, 1), max);
+        });
+    };
 
-  if (loading) {
+    const handleAddToCart = () => {
+        if (!matchedVariant) return;
+
+        addItem({
+            variantId: matchedVariant.id,
+            productId: product.id,
+            productName: product.name,
+            image: product.image,
+            price: Number(matchedVariant.selling_price),
+            colorName: matchedVariant.color,
+            sizeName: matchedVariant.size,
+            sku: matchedVariant.sku,
+            quantity: qty,
+        });
+    };
+
+    const handleBuyNow = () => {
+        if (!matchedVariant) return;
+
+        handleAddToCart();
+        router.push("/checkout");
+    };
+
+    const handleWhatsappOrder = () => {
+        if (!matchedVariant) return;
+
+        const opts = [matchedVariant.color, matchedVariant.size]
+            .filter(Boolean)
+            .join(", ");
+
+        const msg =
+            `Hello Fuzio Gorilla,\n\nI would like to place an order.\n\n` +
+            `Product:\n${product.name}${opts ? ` (${opts})` : ""}\n\n` +
+            `Quantity:\n${qty}\n\n` +
+            `Total:\n${formatPrice(
+                Number(matchedVariant.selling_price) * qty
+            )}\n\n` +
+            `Please confirm my order and delivery details.`;
+
+        window.open(waLink(msg), "_blank");
+    };
+
+    // Built from what the schema actually has — no invented spec fields.
+    const specs: { label: string; value: string }[] = [
+        { label: "Category", value: category?.name ?? "—" },
+        ...(matchedVariant
+            ? [{ label: "SKU", value: matchedVariant.sku }]
+            : []),
+        ...(availableColors.length
+            ? [
+                  {
+                      label: "Available Colours",
+                      value: availableColors.join(", "),
+                  },
+              ]
+            : []),
+        ...(availableSizes.length
+            ? [
+                  {
+                      label: "Available Sizes",
+                      value: availableSizes.join(", "),
+                  },
+              ]
+            : []),
+    ];
+
     return (
-      <main className="w-full overflow-x-hidden bg-bg">
-        <section className="px-4 py-9 sm:px-6">
-          <div className="mx-auto max-w-[1240px]">
-            <div className="grid grid-cols-1 gap-11 md:grid-cols-2">
-              <div className="aspect-square w-full animate-pulse bg-ink-2" />
-
-              <div>
-                <div className="mb-3 h-8 w-3/4 animate-pulse bg-paper" />
-
-                <div className="mb-6 h-6 w-1/3 animate-pulse bg-paper" />
-
-                <div className="h-24 w-full animate-pulse bg-paper" />
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (error || notFound || !product) {
-    return (
-      <main className="w-full overflow-x-hidden bg-bg">
-        <section className="px-4 py-16 text-center sm:px-6">
-          <p className="mb-4 text-sm text-steel">
-            {error
-              ? PRODUCT.loadError
-              : PRODUCT.notFound}
-          </p>
-
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 border-2 border-ink bg-ink px-5 py-2.5 text-[12px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink"
-          >
-            Back to Home
-          </Link>
-        </section>
-      </main>
-    );
-  }
-
-  const image = mediaUrl(
-    product.image ?? null
-  );
-
-  return (
-    <main className="w-full overflow-x-hidden bg-bg">
-      <section className="px-4 py-9 sm:px-6">
-        <div className="mx-auto max-w-[1240px]">
-
-          {/* Breadcrumb */}
-          <div className="mb-5 text-xs font-semibold text-steel">
-            <Link
-              href="/"
-              className="hover:text-accent-dark"
-            >
-              Home
-            </Link>
-
-            <span className="mx-1.5 opacity-50">
-              /
-            </span>
-
-            {category ? (
-              <Link
-                href={`/category/${category.id}`}
-                className="hover:text-accent-dark"
-              >
-                {category.name}
-              </Link>
-            ) : (
-              <span>Category</span>
-            )}
-
-            <span className="mx-1.5 opacity-50">
-              /
-            </span>
-
-            <span className="text-ink">
-              {product.name}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 items-start gap-11 md:grid-cols-2">
-
-            {/* Gallery */}
-            <div>
-              <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-ink-2">
-                {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={image}
-                    alt={product.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <FaBoxOpen className="text-6xl text-steel-light" />
-                )}
-              </div>
-
-              {!image && (
-                <p className="mt-2 text-center text-[11px] text-steel">
-                  {PRODUCT.imageUnavailable}
-                </p>
-              )}
-            </div>
-
-            {/* Product details */}
-            <div>
-              <h1 className="mb-2 text-2xl font-black leading-tight tracking-tight text-ink sm:text-3xl">
-                {product.name}
-              </h1>
-
-              <div className="mb-1.5 font-mono text-xl font-bold text-ink sm:text-2xl">
-                {formatPrice(
-                  product.selling_price
-                )}
-              </div>
-
-              <div className="mb-5 font-mono text-xs font-bold uppercase tracking-wide text-green">
-                ✓ In Stock
-              </div>
-
-              <p className="mb-6 max-w-md text-sm leading-relaxed text-steel">
-                {product.description}
-              </p>
-
-              {/* Size / Colour */}
-              {(product.variants[0]?.size || product.variants[0]?.color) && (
-                <div className="mb-6 flex flex-wrap gap-6">
-
-                  {product.variants[0]?.size && (
-                    <div>
-                      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                        Size
-                      </span>
-
-                      <span className="inline-block border border-ink/15 bg-paper px-3.5 py-2 text-[13px] font-semibold">
-                        {product.variants[0].size}
-                      </span>
-                    </div>
-                  )}
-
-                  {product.variants[0]?.color && (
-                    <div>
-                      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                        Colour
-                      </span>
-
-                      <span className="inline-block border border-ink/15 bg-paper px-3.5 py-2 text-[13px] font-semibold">
-                        {product.variants[0].color}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Quantity */}
-              <div className="mb-6">
-                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                  Quantity
-                </span>
-
-                <div className="flex w-fit items-center border-[1.5px] border-ink/15">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeQty(-1)
-                    }
-                    className="flex h-10 w-9 items-center justify-center text-base font-bold hover:bg-bg"
-                  >
-                    −
-                  </button>
-
-                  <span className="w-11 text-center font-mono text-sm font-bold">
-                    {qty}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeQty(1)
-                    }
-                    className="flex h-10 w-9 items-center justify-center text-base font-bold hover:bg-bg"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex max-w-[340px] flex-col gap-2.5">
-
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="w-full border-2 border-ink bg-ink py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink"
-                >
-                  Add to Cart
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleBuyNow}
-                  className="w-full border-2 border-accent bg-accent py-3 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:border-ink hover:bg-ink hover:text-paper"
-                >
-                  Buy Now
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleWhatsAppOrder}
-                  className="flex w-full items-center justify-center gap-2 bg-green py-3 text-[13px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#245530]"
-                >
-                  <FaWhatsapp />
-                  Order on WhatsApp
-                </button>
-              </div>
-
-              {/* Specifications */}
-              <div className="mt-8 border-t border-ink/10 pt-5">
-                <h5 className="mb-3 font-mono text-xs font-bold uppercase tracking-wide text-ink">
-                  Specifications
-                </h5>
-
-                <table className="w-full border-collapse text-[13px]">
-                  <tbody>
-                    <tr className="border-b border-ink/5">
-                      <td className="w-2/5 py-2 text-steel">
-                        Category
-                      </td>
-
-                      <td className="py-2">
-                        {category?.name ?? "—"}
-                      </td>
-                    </tr>
-
-                    {product.variants[0]?.color && (
-                      <tr className="border-b border-ink/5">
-                        <td className="w-2/5 py-2 text-steel">
-                          Colour
-                        </td>
-
-                        <td className="py-2">
-                          {product.variants[0].color}
-                        </td>
-                      </tr>
+        <div className="px-4 py-10 sm:px-6 sm:py-14">
+            <div className="mx-auto max-w-[1240px]">
+                {/* Breadcrumb */}
+                <div className="mb-6 flex flex-wrap items-center gap-2 text-[12px] font-semibold text-steel">
+                    <Link
+                        href="/"
+                        className="transition-colors hover:text-accent-dark"
+                    >
+                        Home
+                    </Link>
+                    <span className="opacity-50">/</span>
+                    {category ? (
+                        <Link
+                            href={`/category/${category.id}`}
+                            className="transition-colors hover:text-accent-dark"
+                        >
+                            {category.name}
+                        </Link>
+                    ) : (
+                        <span>Category</span>
                     )}
+                    <span className="opacity-50">/</span>
+                    <span className="text-ink">{product.name}</span>
+                </div>
 
-                    {product.variants[0]?.size && (
-                      <tr className="border-b border-ink/5">
-                        <td className="w-2/5 py-2 text-steel">
-                          Size
-                        </td>
+                <div className="grid gap-10 md:grid-cols-2 md:gap-12">
+                    {/* Gallery */}
+                    <div className="relative aspect-square overflow-hidden bg-ink-2">
+                        {product.image ? (
+                            <Image
+                                src={mediaUrl(product.image)!}
+                                alt={product.name}
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                className="object-cover"
+                                priority
+                            />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center text-steel-light">
+                                <FaBoxOpen size={48} />
+                            </div>
+                        )}
+                    </div>
 
-                        <td className="py-2">
-                          {product.variants[0].size}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    {/* Info */}
+                    <div>
+                        <h1 className="text-2xl font-black leading-tight tracking-tight text-ink sm:text-3xl">
+                            {product.name}
+                        </h1>
+
+                        <div className="mt-3 font-mono text-xl font-bold text-ink sm:text-2xl">
+                            {displayPrice !== null
+                                ? formatPrice(displayPrice)
+                                : "Enquire for pricing"}
+                        </div>
+
+                        <div
+                            className={`mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] ${
+                                inStock ? "text-green" : "text-red-600"
+                            }`}
+                        >
+                            {inStock ? (
+                                <>
+                                    <FaCheckCircle size={11} />
+                                    In Stock
+                                </>
+                            ) : (
+                                <>
+                                    <FaTimesCircle size={11} />
+                                    Out of Stock
+                                </>
+                            )}
+                        </div>
+
+                        <p className="mt-4 text-sm leading-relaxed text-steel">
+                            {product.description}
+                        </p>
+
+                        {/* Size */}
+                        {availableSizes.length > 0 && (
+                            <div className="mt-6">
+                                <span className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                                    Size
+                                </span>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {availableSizes.map((size) => (
+                                        <button
+                                            key={size}
+                                            type="button"
+                                            onClick={() =>
+                                                setSelectedSize(size)
+                                            }
+                                            className={`border-2 px-4 py-2 text-[13px] font-semibold transition-colors ${
+                                                selectedSize === size
+                                                    ? "border-ink bg-ink text-paper"
+                                                    : "border-ink/15 bg-paper text-ink hover:border-ink/40"
+                                            }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Colour */}
+                        {availableColors.length > 0 && (
+                            <div className="mt-5">
+                                <span className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                                    Colour
+                                </span>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {availableColors.map((color) => (
+                                        <button
+                                            key={color}
+                                            type="button"
+                                            onClick={() =>
+                                                setSelectedColor(color)
+                                            }
+                                            className={`border-2 px-4 py-2 text-[13px] font-semibold transition-colors ${
+                                                selectedColor === color
+                                                    ? "border-ink bg-ink text-paper"
+                                                    : "border-ink/15 bg-paper text-ink hover:border-ink/40"
+                                            }`}
+                                        >
+                                            {color}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Quantity */}
+                        <div className="mt-5">
+                            <span className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                                Quantity
+                            </span>
+
+                            <div className="flex w-fit items-center border-2 border-ink/15">
+                                <button
+                                    type="button"
+                                    onClick={() => changeQty(-1)}
+                                    disabled={!inStock}
+                                    className="flex h-10 w-10 items-center justify-center text-base font-bold text-ink transition-colors hover:bg-ink/5 disabled:opacity-40"
+                                >
+                                    −
+                                </button>
+
+                                <span className="w-11 text-center font-mono text-sm font-bold text-ink">
+                                    {qty}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    onClick={() => changeQty(1)}
+                                    disabled={!inStock}
+                                    className="flex h-10 w-10 items-center justify-center text-base font-bold text-ink transition-colors hover:bg-ink/5 disabled:opacity-40"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-7 flex max-w-sm flex-col gap-2.5">
+                            <button
+                                type="button"
+                                onClick={handleAddToCart}
+                                disabled={!inStock}
+                                className="w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Add to Cart
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleBuyNow}
+                                disabled={!inStock}
+                                className="w-full bg-accent px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Buy Now
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleWhatsappOrder}
+                                disabled={!inStock}
+                                className="flex w-full items-center justify-center gap-2 bg-green px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#245530] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <FaWhatsapp />
+                                Order on WhatsApp
+                            </button>
+                        </div>
+
+                        {/* Specifications */}
+                        {specs.length > 0 && (
+                            <div className="mt-8 border-t border-ink/10 pt-6">
+                                <h2 className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                                    Specifications
+                                </h2>
+
+                                <table className="w-full border-collapse text-[13px]">
+                                    <tbody>
+                                        {specs.map((row) => (
+                                            <tr
+                                                key={row.label}
+                                                className="border-b border-ink/10"
+                                            >
+                                                <td className="w-2/5 py-2 text-steel">
+                                                    {row.label}
+                                                </td>
+                                                <td className="py-2 font-semibold text-ink">
+                                                    {row.value}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </section>
-    </main>
-  );
+    );
 }

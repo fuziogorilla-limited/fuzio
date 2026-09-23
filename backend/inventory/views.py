@@ -1,193 +1,250 @@
-from django.db.models import Prefetch
-from django.shortcuts import get_object_or_404
-
-from rest_framework import permissions, status
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from .models import Category, Product, ProductVariant
-from .serializers import (
-    CategorySerializer,
-    ProductSerializer,
-    PublicCategorySerializer,
-    PublicProductSerializer,
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions
+from .serializers import(
+    CategoriesSerializers,
+    CategoryCreateSerializers,
+    ColorCreateSerializers,
+    ColorSerializer,
+    SizeCreateSerializers,
+    SizeSerializers,
+    ProductCreateSerializers,
+    ProductSerializers,
+    ProductVariantCreateSerializers,
+    ProductVariantSerializers,
+    GuestProductVariantSerializer,
+    GuestProductSerializer
+)
+from .models import(
+    Category, 
+    Product,
+    Size,
+    Color,
+    ProductVariant
 )
 
+class AdminCategoryApiView(APIView):
+    permission_classes=[permissions.IsAdminUser]
 
-class CategoryApiView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-
+    #create a category
     def post(self, request):
-        serializer = CategorySerializer(data=request.data)
+        serializer=CategoryCreateSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response({
+            "message":"category added successfully",
+            "data":serializer.data
+        },status=status.HTTP_201_CREATED)
 
-        return Response(
-            {
-                "message": "Category added successfully",
-                "category": serializer.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
+    #get all categories
     def get(self, request):
-        items = Category.objects.all()
+        items=Category.objects.all()
+        serializer=CategoriesSerializers(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        serializer = CategorySerializer(
-            items,
-            many=True,
-        )
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
-        )
-
+    #update a category
     def patch(self, request, pk):
-        item = get_object_or_404(Category, pk=pk)
-
-        serializer = CategorySerializer(
-            item,
-            data=request.data,
-            partial=True,
-        )
-
+        item=get_object_or_404(Category, pk=pk)
+        serializer=CategoryCreateSerializers(item, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response({
+            "message":"category updated successfully",
+            "data":serializer.data
+        }, status=status.HTTP_200_OK)
 
-        return Response(
-            {
-                "message": "Category updated successfully",
-                "category": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
-
+    #delete a category
     def delete(self, request, pk):
-        item = get_object_or_404(Category, pk=pk)
-
+        item=get_object_or_404(Category, pk=pk)
         item.delete()
-
-        return Response(
-            {
-                "message": "Category deleted successfully",
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({
+            "message":"category deleted successfully",
+        },status=status.HTTP_200_OK)
 
 
-class ProductApiView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
+class AdminColorApiView(APIView):
+    permission_classes=[permissions.IsAdminUser]
 
+    #create a color
     def post(self, request):
-        serializer = ProductSerializer(data=request.data)
+        serializer=ColorCreateSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response({
+            "message":"color created successfully",
+            "data":serializer.data
+        }, status=status.HTTP_201_CREATED)
 
-        return Response(
-            {
-                "message": "Product successfully created",
-                "product": serializer.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
+    #get all colors
     def get(self, request):
-        items = Product.objects.select_related(
-            "category"
-        ).prefetch_related(
-            "variants"
-        )
+        items=Color.objects.all()
+        serializer=ColorSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        serializer = ProductSerializer(
-            items,
-            many=True,
-        )
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
-        )
-
+    #update a color
     def patch(self, request, pk):
-        item = get_object_or_404(Product, pk=pk)
-
-        serializer = ProductSerializer(
-            item,
-            data=request.data,
-            partial=True,
-        )
-
+        item=get_object_or_404(Color, pk=pk)
+        serializer=ColorCreateSerializers(item, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response({
+            "message":"color updated successfully",
+            "data":serializer.data
+        }, status=status.HTTP_200_OK)
 
-        return Response(
-            {
-                "message": "Product successfully updated",
-                "product": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
-
+    #delete a color
     def delete(self, request, pk):
-        item = get_object_or_404(Product, pk=pk)
-
+        item=get_object_or_404(Color, pk=pk)
         item.delete()
+        return Response({
+            "message":"Color deleted successfully"
+        },status=status.HTTP_200_OK)
 
-        return Response(
-            {
-                "message": "Product successfully deleted",
-            },
-            status=status.HTTP_200_OK,
-        )
+class AdminSizeApiView(APIView):
+    permission_classes=[permissions.IsAdminUser]
+
+    #create a size
+    def post(self, request):
+        serializer=SizeCreateSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"size created successfully",
+            "data":serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    #get all size
+    def get(self, request):
+        items=Size.objects.all()
+        serializer=SizeSerializers(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    #update a size
+    def patch(self, request, pk):
+        item=get_object_or_404(Size, pk=pk)
+        serializer=SizeCreateSerializers(item, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"size updated successfully",
+            "data":serializer.data
+        }, status=status.HTTP_200_OK)
+
+    #delete a size
+    def delete(self, request, pk):
+        item=get_object_or_404(Size, pk=pk)
+        item.delete()
+        return Response({
+            "message":"size deleted successfully"
+        },status=status.HTTP_200_OK)
 
 
-class PublicCategoryApiView(APIView):
+class AdminProductApiView(APIView):
+    permission_classes=[permissions.IsAdminUser]
+
+    #create a product
+    def post(self, request):
+        serializer=ProductCreateSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"product created successfully",
+            "data":serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    #get all products
+    def get(self, request):
+        items=Product.objects.all()
+        serializer=ProductSerializers(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    #update a product
+    def patch(self, request, pk):
+        item=get_object_or_404(Product, pk=pk)
+        serializer=ProductCreateSerializers(item, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"product updated successfully",
+            "data":serializer.data
+        }, status=status.HTTP_200_OK)
+
+    #delete a product
+    def delete(self, request, pk):
+        item=get_object_or_404(Product, pk=pk)
+        item.delete()
+        return Response({
+            "message":"product deleted successfully"
+        }, status=status.HTTP_200_OK)
+
+class AdminProductVariantApiView(APIView):
+    permission_classes=[permissions.IsAdminUser]
+
+    #create product variant
+    def post(self, request):
+        serializer=ProductVariantCreateSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"variant added successfully",
+            "data":serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    #get all products
+    def get(self, request):
+        items=ProductVariant.objects.all()
+        serializer=ProductVariantSerializers(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    #update product variant
+    def patch(self, request, pk):
+        item=get_object_or_404(ProductVariant, pk=pk)
+        serializer=ProductVariantCreateSerializers(item, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"variant updated successfully",
+            "data":serializer.data
+        }, status=status.HTTP_200_OK)
+
+    #delete variant
+    def delete(self, request, pk):
+        item=get_object_or_404(ProductVariant, pk=pk)
+        item.delete()
+        return Response({
+            "message":"variant deleted successfully"
+        }, status=status.HTTP_200_OK)
+
+
+#Public views
+class GuestProductApiView(APIView):
+    permission_classes=[permissions.AllowAny]
+
+    #get products
+    def get(self, request):
+        items=Product.objects.filter(is_active=True)
+        serializer=GuestProductSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GuestProductVariantApiView(APIView):
+    permission_classes=[permissions.AllowAny]
+
+    #get product variants
+    def get(self, request):
+        items=ProductVariant.objects.filter(is_active=True)
+        serializer=GuestProductVariantSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GuestCategoryApiView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        items = Category.objects.filter(
-            is_active=True
-        )
-
-        serializer = PublicCategorySerializer(
-            items,
-            many=True,
-        )
-
+        items = Category.objects.filter(is_active=True)
+        serializer = CategoriesSerializers(items, many=True)
         return Response(
             serializer.data,
-            status=status.HTTP_200_OK,
-        )
-
-
-class PublicProductApiView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request):
-        items = (
-            Product.objects
-            .filter(is_active=True)
-            .select_related("category")
-            .prefetch_related(
-                Prefetch(
-                    "variants",
-                    queryset=ProductVariant.objects.filter(
-                        is_active=True
-                    ),
-                )
-            )
-        )
-
-        serializer = PublicProductSerializer(
-            items,
-            many=True,
-        )
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
+            status=status.HTTP_200_OK
         )

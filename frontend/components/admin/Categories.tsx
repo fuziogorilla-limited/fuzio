@@ -1,396 +1,731 @@
 "use client";
 
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaThLarge,
-  FaTimes,
-  FaSpinner,
-  FaImage,
-} from "react-icons/fa";
+import { useState, type FormEvent } from "react";
+import Image from "next/image";
+import { FaPlus, FaPen, FaTrash, FaTimes, FaTags } from "react-icons/fa";
 
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories, useColors, useSizes } from "@/hooks/useInventory";
+import { mediaUrl } from "@/lib/utils";
+import type {
+    ID,
+    CategoryPayload,
+    CategoryCreateInput,
+    ColorPayload,
+    ColorCreateInput,
+    SizePayload,
+    SizeCreateInput,
+} from "@/types/inventory";
 
-const CATEGORY_MESSAGES = {
-  empty: "No categories found.",
-} as const;
+/* -------------------------------------------------------------------------- */
+/*  Shared bits                                                               */
+/* -------------------------------------------------------------------------- */
 
-import type { Category } from "@/types/fields";
+const inputClass =
+    "w-full border border-ink/15 bg-paper px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-accent";
 
-export default function Categories() {
-  const {
-    categories,
-    loading,
-    loadError,
+const labelClass =
+    "mb-1.5 block font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-steel";
 
-    deletingId,
-
-    modalOpen,
-    modalMode,
-    draft,
-    saving,
-    formError,
-
-    openAddModal,
-    openEditModal,
-    closeModal,
-    updateDraft,
-    saveCategory,
-    deleteCategory,
-  } = useCategories();
-
-  /*
-   * Keep the component aware of the backend category shape.
-   *
-   * Category:
-   * - id
-   * - name
-   * - description
-   * - image
-   * - is_active
-   * - date_added
-   *
-   * CreateCategoryPayload / UpdateCategoryPayload:
-   * - name
-   * - description
-   * - image
-   * - is_active
-   */
-  const typedCategories: Category[] = categories;
-
-  return (
-    <div className="w-full min-w-0">
-      {/* Toolbar */}
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <span className="text-[12.5px] text-steel">
-          {typedCategories.length} categor
-          {typedCategories.length === 1 ? "y" : "ies"}
-        </span>
-
-        <button
-          type="button"
-          onClick={openAddModal}
-          className="flex shrink-0 items-center gap-2 border-2 border-ink bg-ink px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink"
-        >
-          <FaPlus size={11} />
-          Add Category
-        </button>
-      </div>
-
-      {/* Load error */}
-      {loadError && (
-        <p className="mb-5 border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
-          {loadError}
-        </p>
-      )}
-
-      {/* Categories */}
-      <div className="border border-ink/10 bg-paper">
-        {loading && (
-          <div className="p-5">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="mb-3 h-12 w-full animate-pulse bg-bg last:mb-0"
-              />
-            ))}
-          </div>
-        )}
-
-        {!loading &&
-          !loadError &&
-          typedCategories.length === 0 && (
-            <p className="p-5 text-[13px] text-steel">
-              {CATEGORY_MESSAGES.empty}
-            </p>
-          )}
-
-        {!loading &&
-          !loadError &&
-          typedCategories.length > 0 && (
-            <ul>
-              {typedCategories.map((category) => (
-                <li
-                  key={category.id}
-                  className="flex flex-wrap items-center gap-3 border-b border-ink/5 px-4 py-3 last:border-none sm:px-5"
-                >
-                  {/* Category image / fallback icon */}
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden bg-ink-2 text-steel-light">
-                    {category.image ? (
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <FaThLarge size={15} />
-                    )}
-                  </div>
-
-                  {/* Name */}
-                  <span className="min-w-0 shrink-0 basis-[160px] truncate text-[13.5px] font-bold">
-                    {category.name}
-                  </span>
-
-                  {/* Description */}
-                  <span className="min-w-0 flex-1 truncate text-[12.5px] text-steel">
-                    {category.description || "No description"}
-                  </span>
-
-                  {/* Status */}
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide ${
-                      category.is_active
-                        ? "bg-green/15 text-green"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {category.is_active
-                      ? "Active"
-                      : "Inactive"}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="ml-auto flex shrink-0 gap-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openEditModal(category)
-                      }
-                      aria-label={`Edit ${category.name}`}
-                      className="flex h-8 w-8 items-center justify-center border border-ink/15 text-steel hover:border-ink hover:text-ink"
-                    >
-                      <FaEdit size={13} />
-                    </button>
+function Modal({
+    title,
+    onClose,
+    children,
+}: {
+    title: string;
+    onClose: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-4 py-8">
+            <div className="max-h-[90vh] w-full max-w-md overflow-y-auto border border-ink/10 bg-paper shadow-xl">
+                <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
+                    <h3 className="text-base font-black uppercase tracking-tight text-ink">
+                        {title}
+                    </h3>
 
                     <button
-                      type="button"
-                      onClick={() =>
-                        deleteCategory(
-                          category.id,
-                          category.name
-                        )
-                      }
-                      disabled={
-                        deletingId === category.id
-                      }
-                      aria-label={`Delete ${category.name}`}
-                      className="flex h-8 w-8 items-center justify-center border border-ink/15 text-steel hover:border-accent-dark hover:text-accent-dark disabled:opacity-50"
+                        type="button"
+                        onClick={onClose}
+                        className="text-steel transition-colors hover:text-ink"
+                        aria-label="Close"
                     >
-                      {deletingId === category.id ? (
-                        <FaSpinner
-                          className="animate-spin"
-                          size={12}
-                        />
-                      ) : (
-                        <FaTrash size={12} />
-                      )}
+                        <FaTimes />
                     </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-      </div>
+                </div>
 
-      {/* Add / Edit modal */}
-      {modalOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/50 px-4"
-          onClick={closeModal}
-        >
-          <div
-            onClick={(event) =>
-              event.stopPropagation()
+                <div className="p-5">{children}</div>
+            </div>
+        </div>
+    );
+}
+
+function ErrorBanner({ message }: { message: string | null }) {
+    if (!message) return null;
+
+    return (
+        <div className="mb-4 border border-red-500/30 bg-red-500/10 px-3 py-2 text-[13px] font-semibold text-red-700">
+            {message}
+        </div>
+    );
+}
+
+function extractErrorMessage(err: unknown, fallback: string): string {
+    if (err && typeof err === "object" && "data" in err) {
+        const data = (err as { data: unknown }).data;
+
+        if (data && typeof data === "object") {
+            const firstValue = Object.values(
+                data as Record<string, unknown>
+            )[0];
+
+            if (Array.isArray(firstValue) && typeof firstValue[0] === "string") {
+                return firstValue[0];
             }
-            className="w-full max-w-[440px] border border-ink/10 bg-paper"
-          >
-            {/* Modal header */}
-            <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
-              <h3 className="text-[15px] font-extrabold text-ink">
-                {modalMode === "add"
-                  ? "Add Category"
-                  : "Edit Category"}
-              </h3>
+        }
+    }
 
-              <button
-                type="button"
-                onClick={closeModal}
-                aria-label="Close"
-                className="text-steel hover:text-ink"
-              >
-                <FaTimes size={18} />
-              </button>
+    return fallback;
+}
+
+type Tab = "categories" | "colors" | "sizes";
+
+const TABS: { key: Tab; label: string }[] = [
+    { key: "categories", label: "Categories" },
+    { key: "colors", label: "Colors" },
+    { key: "sizes", label: "Sizes" },
+];
+
+/* -------------------------------------------------------------------------- */
+/*  Category form                                                             */
+/* -------------------------------------------------------------------------- */
+
+type CategoryFormState = {
+    name: string;
+    description: string;
+    image: File | null;
+};
+
+const emptyCategoryForm: CategoryFormState = {
+    name: "",
+    description: "",
+    image: null,
+};
+
+function CategoryForm({
+    initial,
+    onCancel,
+    onSubmit,
+}: {
+    initial: CategoryFormState;
+    onCancel: () => void;
+    onSubmit: (input: CategoryCreateInput) => Promise<void>;
+}) {
+    const [form, setForm] = useState<CategoryFormState>(initial);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        setError(null);
+
+        try {
+            await onSubmit({
+                name: form.name,
+                description: form.description,
+                ...(form.image ? { image: form.image } : {}),
+            });
+        } catch (err) {
+            setError(extractErrorMessage(err, "Failed to save category"));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <ErrorBanner message={error} />
+
+            <div className="mb-4">
+                <label className={labelClass}>Name</label>
+                <input
+                    required
+                    className={inputClass}
+                    value={form.name}
+                    onChange={(e) =>
+                        setForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                />
             </div>
 
-            {/* Form */}
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                saveCategory();
-              }}
-              className="flex flex-col gap-4 p-5"
-            >
-              {/* Name */}
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                  Name
-                </label>
-
-                <input
-                  type="text"
-                  autoFocus
-                  value={draft.name}
-                  onChange={(event) =>
-                    updateDraft(
-                      "name",
-                      event.target.value
-                    )
-                  }
-                  placeholder="e.g. Workwear"
-                  className="w-full border border-ink/15 bg-paper px-3 py-2.5 text-[13.5px] outline-none focus:border-ink"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                  Description
-                </label>
-
+            <div className="mb-4">
+                <label className={labelClass}>Description</label>
                 <textarea
-                  rows={3}
-                  value={draft.description}
-                  onChange={(event) =>
-                    updateDraft(
-                      "description",
-                      event.target.value
-                    )
-                  }
-                  placeholder="Short description shown on the storefront"
-                  className="w-full resize-none border border-ink/15 bg-paper px-3 py-2.5 text-[13.5px] outline-none focus:border-ink"
-                />
-              </div>
-
-              {/* Image */}
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-ink">
-                  Category Image
-                </label>
-
-                <label className="flex cursor-pointer items-center gap-3 border border-dashed border-ink/20 bg-bg px-3 py-3 transition-colors hover:border-ink/40">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-ink-2 text-steel-light">
-                    {draft.image ? (
-                      <img
-                        src={
-                          typeof draft.image === "string"
-                            ? draft.image
-                            : URL.createObjectURL(
-                                draft.image
-                              )
-                        }
-                        alt="Category preview"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <FaImage size={15} />
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <span className="block text-[12px] font-bold text-ink">
-                      Choose image
-                    </span>
-
-                    <span className="block truncate text-[10.5px] text-steel">
-                      JPG, PNG or WebP
-                    </span>
-                  </div>
-
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={(event) => {
-                      const file =
-                        event.target.files?.[0] ?? null;
-
-                      updateDraft("image", file);
-                    }}
-                  />
-                </label>
-
-                {draft.image && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateDraft("image", null)
+                    rows={3}
+                    className={inputClass}
+                    value={form.description}
+                    onChange={(e) =>
+                        setForm((f) => ({
+                            ...f,
+                            description: e.target.value,
+                        }))
                     }
-                    className="mt-1.5 text-[11px] font-semibold text-steel hover:text-accent-dark"
-                  >
-                    Remove image
-                  </button>
-                )}
-              </div>
-
-              {/* Active */}
-              <label className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
-                <input
-                  type="checkbox"
-                  checked={draft.is_active}
-                  onChange={(event) =>
-                    updateDraft(
-                      "is_active",
-                      event.target.checked
-                    )
-                  }
                 />
+            </div>
 
-                Active (visible on storefront)
-              </label>
+            <div className="mb-6">
+                <label className={labelClass}>Image</label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    className={inputClass}
+                    onChange={(e) =>
+                        setForm((f) => ({
+                            ...f,
+                            image: e.target.files?.[0] ?? null,
+                        }))
+                    }
+                />
+            </div>
 
-              {/* Form error */}
-              {formError && (
-                <p className="border-l-4 border-accent-dark bg-accent/10 px-3 py-2 text-[12.5px] text-accent-dark">
-                  {formError}
-                </p>
-              )}
-
-              {/* Actions */}
-              <div className="mt-1 flex gap-3">
+            <div className="flex justify-end gap-3">
                 <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={saving}
-                  className="flex-1 border-2 border-ink/15 py-2.5 text-[12px] font-bold uppercase tracking-wide text-steel transition-colors hover:border-ink hover:text-ink disabled:opacity-50"
+                    type="button"
+                    onClick={onCancel}
+                    className="border-2 border-ink/15 px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:border-ink"
                 >
-                  Cancel
+                    Cancel
                 </button>
 
                 <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex flex-1 items-center justify-center gap-2 border-2 border-ink bg-ink py-2.5 text-[12px] font-bold uppercase tracking-wide text-paper transition-colors hover:border-accent hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+                    type="submit"
+                    disabled={saving}
+                    className="bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark disabled:opacity-60"
                 >
-                  {saving && (
-                    <FaSpinner
-                      className="animate-spin"
-                      size={12}
+                    {saving ? "Saving..." : "Save Category"}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Simple name-only form (shared by Color + Size)                            */
+/* -------------------------------------------------------------------------- */
+
+function NameForm({
+    initialName,
+    label,
+    onCancel,
+    onSubmit,
+}: {
+    initialName: string;
+    label: string;
+    onCancel: () => void;
+    onSubmit: (name: string) => Promise<void>;
+}) {
+    const [name, setName] = useState(initialName);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        setError(null);
+
+        try {
+            await onSubmit(name);
+        } catch (err) {
+            setError(extractErrorMessage(err, `Failed to save ${label.toLowerCase()}`));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <ErrorBanner message={error} />
+
+            <div className="mb-6">
+                <label className={labelClass}>{label} Name</label>
+                <input
+                    required
+                    autoFocus
+                    className={inputClass}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+            </div>
+
+            <div className="flex justify-end gap-3">
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="border-2 border-ink/15 px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:border-ink"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark disabled:opacity-60"
+                >
+                    {saving ? "Saving..." : `Save ${label}`}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Categories panel                                                          */
+/* -------------------------------------------------------------------------- */
+
+function CategoriesPanel() {
+    const {
+        categories,
+        loading,
+        error,
+        createCategory,
+        updateCategory,
+        deleteCategory,
+    } = useCategories();
+
+    const [modal, setModal] = useState<{
+        mode: "create" | "edit";
+        category?: CategoryPayload;
+    } | null>(null);
+
+    const handleSubmit = async (input: CategoryCreateInput) => {
+        if (modal?.mode === "edit" && modal.category) {
+            await updateCategory(modal.category.id, input);
+        } else {
+            await createCategory(input);
+        }
+        setModal(null);
+    };
+
+    const handleDelete = async (category: CategoryPayload) => {
+        if (
+            !window.confirm(
+                `Delete "${category.name}"? Products in this category must be reassigned first.`
+            )
+        )
+            return;
+
+        try {
+            await deleteCategory(category.id);
+        } catch {
+            window.alert(
+                "Failed to delete category. It may still have products assigned to it."
+            );
+        }
+    };
+
+    return (
+        <div>
+            <div className="mb-4 flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => setModal({ mode: "create" })}
+                    className="inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark"
+                >
+                    <FaPlus size={11} />
+                    Add Category
+                </button>
+            </div>
+
+            <ErrorBanner message={error} />
+
+            <div className="border border-ink/10 bg-paper">
+                {loading && (
+                    <div className="p-6 text-sm text-steel">
+                        Loading categories...
+                    </div>
+                )}
+
+                {!loading && categories.length === 0 && (
+                    <div className="flex flex-col items-center gap-2 p-10 text-center text-steel">
+                        <FaTags size={22} />
+                        <p className="text-sm">No categories yet.</p>
+                    </div>
+                )}
+
+                {categories.map((category) => (
+                    <div
+                        key={category.id}
+                        className="flex items-center gap-4 border-b border-ink/10 p-4 last:border-b-0"
+                    >
+                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden bg-ink/5">
+                            {category.image ? (
+                                <Image
+                                    src={mediaUrl(category.image)!}
+                                    alt={category.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center text-steel">
+                                    <FaTags size={14} />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="truncate text-sm font-black text-ink">
+                                    {category.name}
+                                </h3>
+
+                                <span
+                                    className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide ${
+                                        category.is_active
+                                            ? "bg-ink/10 text-ink"
+                                            : "bg-red-500/10 text-red-600"
+                                    }`}
+                                >
+                                    {category.is_active
+                                        ? "Active"
+                                        : "Inactive"}
+                                </span>
+                            </div>
+
+                            {category.description && (
+                                <p className="mt-0.5 truncate text-[12px] text-steel">
+                                    {category.description}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-shrink-0 items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setModal({ mode: "edit", category })
+                                }
+                                className="border border-ink/15 p-2 text-steel transition-colors hover:border-ink hover:text-ink"
+                                aria-label="Edit category"
+                            >
+                                <FaPen size={12} />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => handleDelete(category)}
+                                className="border border-ink/15 p-2 text-steel transition-colors hover:border-red-500 hover:text-red-600"
+                                aria-label="Delete category"
+                            >
+                                <FaTrash size={12} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {modal && (
+                <Modal
+                    title={
+                        modal.mode === "edit"
+                            ? "Edit Category"
+                            : "Add Category"
+                    }
+                    onClose={() => setModal(null)}
+                >
+                    <CategoryForm
+                        initial={
+                            modal.mode === "edit" && modal.category
+                                ? {
+                                      name: modal.category.name,
+                                      description:
+                                          modal.category.description,
+                                      image: null,
+                                  }
+                                : emptyCategoryForm
+                        }
+                        onCancel={() => setModal(null)}
+                        onSubmit={handleSubmit}
                     />
-                  )}
-
-                  {saving
-                    ? "Saving…"
-                    : modalMode === "add"
-                      ? "Add Category"
-                      : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
+                </Modal>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Colors panel                                                              */
+/* -------------------------------------------------------------------------- */
+
+function ColorsPanel() {
+    const { colors, loading, error, createColor, updateColor, deleteColor } =
+        useColors();
+
+    const [modal, setModal] = useState<{
+        mode: "create" | "edit";
+        color?: ColorPayload;
+    } | null>(null);
+
+    const handleSubmit = async (name: string) => {
+        const input: ColorCreateInput = { name };
+
+        if (modal?.mode === "edit" && modal.color) {
+            await updateColor(modal.color.id, input);
+        } else {
+            await createColor(input);
+        }
+        setModal(null);
+    };
+
+    const handleDelete = async (color: ColorPayload) => {
+        if (!window.confirm(`Delete color "${color.name}"?`)) return;
+
+        try {
+            await deleteColor(color.id);
+        } catch {
+            window.alert(
+                "Failed to delete color. It may still be used by a product variant."
+            );
+        }
+    };
+
+    return (
+        <div>
+            <div className="mb-4 flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => setModal({ mode: "create" })}
+                    className="inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark"
+                >
+                    <FaPlus size={11} />
+                    Add Color
+                </button>
+            </div>
+
+            <ErrorBanner message={error} />
+
+            <div className="border border-ink/10 bg-paper">
+                {loading && (
+                    <div className="p-6 text-sm text-steel">
+                        Loading colors...
+                    </div>
+                )}
+
+                {!loading && colors.length === 0 && (
+                    <div className="p-10 text-center text-sm text-steel">
+                        No colors yet.
+                    </div>
+                )}
+
+                {colors.map((color) => (
+                    <div
+                        key={color.id}
+                        className="flex items-center justify-between gap-4 border-b border-ink/10 px-4 py-3 last:border-b-0"
+                    >
+                        <span className="text-sm font-bold text-ink">
+                            {color.name}
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setModal({ mode: "edit", color })
+                                }
+                                className="border border-ink/15 p-2 text-steel transition-colors hover:border-ink hover:text-ink"
+                                aria-label="Edit color"
+                            >
+                                <FaPen size={12} />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => handleDelete(color)}
+                                className="border border-ink/15 p-2 text-steel transition-colors hover:border-red-500 hover:text-red-600"
+                                aria-label="Delete color"
+                            >
+                                <FaTrash size={12} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {modal && (
+                <Modal
+                    title={
+                        modal.mode === "edit" ? "Edit Color" : "Add Color"
+                    }
+                    onClose={() => setModal(null)}
+                >
+                    <NameForm
+                        initialName={modal.color?.name ?? ""}
+                        label="Color"
+                        onCancel={() => setModal(null)}
+                        onSubmit={handleSubmit}
+                    />
+                </Modal>
+            )}
+        </div>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Sizes panel                                                               */
+/* -------------------------------------------------------------------------- */
+
+function SizesPanel() {
+    const { sizes, loading, error, createSize, updateSize, deleteSize } =
+        useSizes();
+
+    const [modal, setModal] = useState<{
+        mode: "create" | "edit";
+        size?: SizePayload;
+    } | null>(null);
+
+    const handleSubmit = async (name: string) => {
+        const input: SizeCreateInput = { name };
+
+        if (modal?.mode === "edit" && modal.size) {
+            await updateSize(modal.size.id, input);
+        } else {
+            await createSize(input);
+        }
+        setModal(null);
+    };
+
+    const handleDelete = async (size: SizePayload) => {
+        if (!window.confirm(`Delete size "${size.name}"?`)) return;
+
+        try {
+            await deleteSize(size.id);
+        } catch {
+            window.alert(
+                "Failed to delete size. It may still be used by a product variant."
+            );
+        }
+    };
+
+    return (
+        <div>
+            <div className="mb-4 flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => setModal({ mode: "create" })}
+                    className="inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark"
+                >
+                    <FaPlus size={11} />
+                    Add Size
+                </button>
+            </div>
+
+            <ErrorBanner message={error} />
+
+            <div className="border border-ink/10 bg-paper">
+                {loading && (
+                    <div className="p-6 text-sm text-steel">
+                        Loading sizes...
+                    </div>
+                )}
+
+                {!loading && sizes.length === 0 && (
+                    <div className="p-10 text-center text-sm text-steel">
+                        No sizes yet.
+                    </div>
+                )}
+
+                {sizes.map((size) => (
+                    <div
+                        key={size.id}
+                        className="flex items-center justify-between gap-4 border-b border-ink/10 px-4 py-3 last:border-b-0"
+                    >
+                        <span className="text-sm font-bold text-ink">
+                            {size.name}
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setModal({ mode: "edit", size })
+                                }
+                                className="border border-ink/15 p-2 text-steel transition-colors hover:border-ink hover:text-ink"
+                                aria-label="Edit size"
+                            >
+                                <FaPen size={12} />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => handleDelete(size)}
+                                className="border border-ink/15 p-2 text-steel transition-colors hover:border-red-500 hover:text-red-600"
+                                aria-label="Delete size"
+                            >
+                                <FaTrash size={12} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {modal && (
+                <Modal
+                    title={modal.mode === "edit" ? "Edit Size" : "Add Size"}
+                    onClose={() => setModal(null)}
+                >
+                    <NameForm
+                        initialName={modal.size?.name ?? ""}
+                        label="Size"
+                        onCancel={() => setModal(null)}
+                        onSubmit={handleSubmit}
+                    />
+                </Modal>
+            )}
+        </div>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Main component                                                            */
+/* -------------------------------------------------------------------------- */
+
+export default function Category() {
+    const [tab, setTab] = useState<Tab>("categories");
+
+    return (
+        <div className="px-4 py-8 sm:px-6">
+            <div className="mx-auto max-w-[1240px]">
+                {/* Header */}
+                <div className="mb-6">
+                    <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent-dark">
+                        Inventory
+                    </div>
+                    <h1 className="mt-1 text-2xl font-black tracking-tight text-ink">
+                        Categories, Colors &amp; Sizes
+                    </h1>
+                </div>
+
+                {/* Tabs */}
+                <div className="mb-6 flex gap-1 border-b border-ink/10">
+                    {TABS.map((t) => (
+                        <button
+                            key={t.key}
+                            type="button"
+                            onClick={() => setTab(t.key)}
+                            className={`px-4 py-2.5 font-mono text-[12px] font-bold uppercase tracking-wide transition-colors ${
+                                tab === t.key
+                                    ? "border-b-2 border-accent text-ink"
+                                    : "text-steel hover:text-ink"
+                            }`}
+                        >
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+
+                {tab === "categories" && <CategoriesPanel />}
+                {tab === "colors" && <ColorsPanel />}
+                {tab === "sizes" && <SizesPanel />}
+            </div>
+        </div>
+    );
 }

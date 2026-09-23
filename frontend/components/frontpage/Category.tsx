@@ -1,285 +1,295 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useState } from "react";
-import { FaArrowRight, FaBoxOpen } from "react-icons/fa";
+import Image from "next/image";
+import { FaArrowRight, FaBoxOpen, FaWhatsapp } from "react-icons/fa";
 
-import { useCategoryData } from "@/hooks/useCategories";
-import { formatPrice, mediaUrl } from "@/lib/utils";
-import type { SortOption } from "@/types/fields";
+import {
+    usePublicCategories,
+    usePublicProducts,
+    usePublicProductVariants,
+} from "@/hooks/useInventory";
+import { formatPrice, mediaUrl, waLink } from "@/lib/utils";
 
-const CATEGORY_SORT_OPTIONS = [
-  { value: "default", label: "Sort: Featured" },
-  { value: "low", label: "Price: Low to High" },
-  { value: "high", label: "Price: High to Low" },
-] as const;
+type SortOption = "featured" | "price-low" | "price-high";
 
-export default function Category() {
-  const params = useParams();
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+    { value: "featured", label: "Sort: Featured" },
+    { value: "price-low", label: "Price: Low to High" },
+    { value: "price-high", label: "Price: High to Low" },
+];
 
-  const categoryId = Number(params.id);
+export default function Category({ categoryId }: { categoryId: string }) {
+    const id = Number(categoryId);
 
-  const {
-    category,
-    catLoading,
-    catError,
-    products,
-    prodLoading,
-    prodError,
-  } = useCategoryData(categoryId);
+    const { categories, loading: categoriesLoading } = usePublicCategories();
+    const { products, loading: productsLoading } = usePublicProducts();
+    const {
+        variants,
+        loading: variantsLoading,
+        lowestPriceFor,
+    } = usePublicProductVariants();
 
-  const [sort, setSort] = useState<SortOption>("default");
+    const [sort, setSort] = useState<SortOption>("featured");
 
-  const sortedProducts = [...products].sort((a, b) => {
-    if (sort === "low") {
-      return Number(a.selling_price) - Number(b.selling_price);
-    }
+    const category = categories.find((c) => c.id === id);
+    const loading = categoriesLoading || productsLoading;
 
-    if (sort === "high") {
-      return Number(b.selling_price) - Number(a.selling_price);
-    }
+    const categoryProducts = useMemo(() => {
+        let list = products.filter((p) => p.category === id);
 
-    return 0;
-  });
+        if (sort === "price-low" || sort === "price-high") {
+            list = [...list].sort((a, b) => {
+                const priceA =
+                    lowestPriceFor(a.id) ?? Number.POSITIVE_INFINITY;
+                const priceB =
+                    lowestPriceFor(b.id) ?? Number.POSITIVE_INFINITY;
 
-  return (
-    <main className="w-full overflow-x-hidden bg-bg">
-      {/* =========================================================
-          CATEGORY HERO
-      ========================================================== */}
-      <section className="bg-ink px-4 py-7 text-paper sm:px-6">
-        <div className="mx-auto max-w-[1240px]">
-          <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-            Category
-          </div>
+                return sort === "price-low"
+                    ? priceA - priceB
+                    : priceB - priceA;
+            });
+        } else {
+            // Featured items first; the API already orders the rest by
+            // -date_added so newest-within-group stays stable.
+            list = [...list].sort(
+                (a, b) => Number(b.feature) - Number(a.feature)
+            );
+        }
 
-          {catLoading && (
-            <>
-              <div className="mt-2 h-8 w-64 max-w-full animate-pulse bg-white/10" />
+        return list;
+    }, [products, id, sort, lowestPriceFor]);
 
-              <div className="mt-3 h-4 w-96 max-w-full animate-pulse bg-white/10" />
-            </>
-          )}
+    // Only treat as "not found" once categories have actually finished
+    // loading — otherwise this flashes on first paint before data arrives.
+    if (!categoriesLoading && !category) {
+        return (
+            <div className="px-4 py-20 text-center sm:px-6">
+                <div className="mx-auto max-w-[1240px]">
+                    <FaBoxOpen size={28} className="mx-auto mb-4 text-steel" />
 
-          {!catLoading && catError && (
-            <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-              Category
-            </h1>
-          )}
+                    <h1 className="text-xl font-black tracking-tight text-ink">
+                        Category not found
+                    </h1>
 
-          {!catLoading && !catError && (
-            <>
-              <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-                {category?.name ?? "Category"}
-              </h1>
+                    <p className="mt-2 text-sm text-steel">
+                        This category may have been removed or is no longer
+                        available.
+                    </p>
 
-              {category?.description && (
-                <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-steel-light">
-                  {category.description}
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* =========================================================
-          PRODUCTS
-      ========================================================== */}
-      <section className="bg-bg px-4 py-9 sm:px-6">
-        <div className="mx-auto max-w-[1240px]">
-          {/* =====================================================
-              BREADCRUMB
-          ====================================================== */}
-          <div className="mb-5 flex items-center text-xs font-semibold text-steel">
-            <Link
-              href="/"
-              className="transition-colors hover:text-accent-dark"
-            >
-              Home
-            </Link>
-
-            <span className="mx-1.5 opacity-50">/</span>
-
-            <span>{category?.name ?? "Category"}</span>
-          </div>
-
-          {/* =====================================================
-              TOOLBAR
-          ====================================================== */}
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3.5">
-            <div className="text-sm font-semibold text-steel">
-              {prodLoading
-                ? "Loading products…"
-                : `${sortedProducts.length} product${
-                    sortedProducts.length === 1 ? "" : "s"
-                  }`}
-            </div>
-
-            <select
-              value={sort}
-              onChange={(event) =>
-                setSort(event.target.value as SortOption)
-              }
-              className="border border-ink/15 bg-paper px-3 py-2.5 font-sans text-[12.5px] font-semibold text-ink outline-none transition-colors focus:border-accent"
-              aria-label="Sort products"
-            >
-              {CATEGORY_SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* =====================================================
-              LOADING STATE
-          ====================================================== */}
-          {prodLoading && (
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="overflow-hidden border border-ink/10 bg-paper"
-                >
-                  <div className="aspect-square animate-pulse bg-ink-2" />
-
-                  <div className="space-y-3 p-4">
-                    <div className="h-4 w-full animate-pulse bg-ink/10" />
-
-                    <div className="h-8 w-2/3 animate-pulse bg-ink/10" />
-
-                    <div className="h-5 w-24 animate-pulse bg-ink/10" />
-
-                    <div className="h-9 w-full animate-pulse bg-ink/10" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* =====================================================
-              ERROR STATE
-          ====================================================== */}
-          {!prodLoading && prodError && (
-            <div className="border border-ink/10 bg-paper p-8 text-center">
-              <p className="text-sm font-semibold text-steel">
-                Couldn&apos;t load products right now.
-              </p>
-
-              <p className="mt-2 text-xs text-steel">
-                Please try again shortly.
-              </p>
-            </div>
-          )}
-
-          {/* =====================================================
-              EMPTY STATE
-          ====================================================== */}
-          {!prodLoading &&
-            !prodError &&
-            sortedProducts.length === 0 && (
-              <div className="border border-ink/10 bg-paper p-8 text-center">
-                <p className="text-sm font-semibold text-steel">
-                  No products found in this category yet.
-                </p>
-              </div>
-            )}
-
-          {/* =====================================================
-              PRODUCT GRID
-          ====================================================== */}
-          {!prodLoading &&
-            !prodError &&
-            sortedProducts.length > 0 && (
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
-                {sortedProducts.map((product) => {
-                  const image = mediaUrl(product.image ?? null);
-
-                  return (
-                    <article
-                      key={product.id}
-                      className="group flex min-w-0 flex-col overflow-hidden border border-ink/10 bg-paper transition-all duration-150 hover:-translate-y-[3px] hover:shadow-[0_10px_22px_rgba(21,20,15,0.10)]"
+                    <Link
+                        href="/"
+                        className="mt-6 inline-flex items-center gap-2 bg-accent px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-accent-dark"
                     >
-                      {/* =================================================
-                          PRODUCT IMAGE
-                      ================================================== */}
-                      <Link
-                        href={`/product/${product.id}`}
-                        className="relative block aspect-square overflow-hidden bg-ink-2"
-                        aria-label={`View ${product.name}`}
-                      >
-                        {image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={image}
-                            alt={product.name}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <FaBoxOpen
-                              size={42}
-                              className="text-paper/70"
-                            />
-                          </div>
-                        )}
+                        Back to Home
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
-                        {/* Stock badge */}
-                        <span className="absolute left-2 top-2 bg-paper px-2 py-[3px] font-mono text-[9.5px] font-bold uppercase tracking-[0.05em] text-green">
-                          In Stock
+    return (
+        <main className="w-full bg-bg">
+            {/* =========================================================
+                CATEGORY HERO
+            ========================================================= */}
+            <section className="bg-ink px-4 py-9 text-paper sm:px-6">
+                <div className="mx-auto max-w-[1240px]">
+                    <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
+                        Category
+                    </div>
+
+                    {categoriesLoading ? (
+                        <div className="mt-3 h-8 w-64 max-w-full animate-pulse bg-paper/10" />
+                    ) : (
+                        <>
+                            <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+                                {category?.name}
+                            </h1>
+
+                            {category?.description && (
+                                <p className="mt-2 max-w-xl text-sm text-steel-light">
+                                    {category.description}
+                                </p>
+                            )}
+                        </>
+                    )}
+                </div>
+            </section>
+
+            <div className="px-4 py-10 sm:px-6 sm:py-14">
+                <div className="mx-auto max-w-[1240px]">
+                    {/* Breadcrumb */}
+                    <div className="mb-5 flex items-center gap-2 text-[12px] font-semibold text-steel">
+                        <Link
+                            href="/"
+                            className="transition-colors hover:text-accent-dark"
+                        >
+                            Home
+                        </Link>
+                        <span className="opacity-50">/</span>
+                        <span className="text-ink">
+                            {category?.name ?? "Category"}
                         </span>
-                      </Link>
+                    </div>
 
-                      {/* =================================================
-                          PRODUCT DETAILS
-                      ================================================== */}
-                      <div className="flex flex-1 flex-col p-[13px_14px_15px]">
-                        {/* Product heading */}
-                        <Link
-                          href={`/product/${product.id}`}
-                          className="block"
+                    {/* Toolbar */}
+                    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                        <span className="text-[13px] font-semibold text-steel">
+                            {loading
+                                ? "Loading products..."
+                                : `${categoryProducts.length} product${
+                                      categoryProducts.length === 1
+                                          ? ""
+                                          : "s"
+                                  }`}
+                        </span>
+
+                        <select
+                            value={sort}
+                            onChange={(e) =>
+                                setSort(e.target.value as SortOption)
+                            }
+                            className="border border-ink/15 bg-paper px-3 py-2 text-[12.5px] font-semibold text-ink outline-none transition-colors focus:border-accent"
                         >
-                          <h2 className="line-clamp-2 text-[13.5px] font-bold leading-[1.35] text-ink transition-colors group-hover:text-accent-dark">
-                            {product.name}
-                          </h2>
-                        </Link>
+                            {SORT_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                        {/* Product description */}
-                        {product.description && (
-                          <p className="mt-1.5 mb-2.5 line-clamp-3 text-[11.5px] leading-[1.5] text-steel">
-                            {product.description}
-                          </p>
-                        )}
-
-                        {/* Product price */}
-                        <div className="mt-auto pt-2 font-mono text-[14.5px] font-bold text-ink">
-                          {formatPrice(product.selling_price)}
+                    {/* Loading skeleton */}
+                    {loading && (
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                            {Array.from({ length: 8 }).map((_, i) => (
+                                <div key={i} className="border border-ink/10 bg-paper">
+                                    <div className="aspect-square animate-pulse bg-ink/5" />
+                                    <div className="space-y-2 p-3.5">
+                                        <div className="h-4 w-4/5 animate-pulse bg-ink/5" />
+                                        <div className="h-3 w-2/5 animate-pulse bg-ink/5" />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+                    )}
 
-                        {/* =================================================
-                            VIEW PRODUCT BUTTON
-                        ================================================== */}
-                        <Link
-                          href={`/product/${product.id}`}
-                          className="mt-2.5 inline-flex w-full items-center justify-center gap-2 border-2 border-ink bg-ink px-3.5 py-[9px] text-[11px] font-bold uppercase tracking-wide text-paper transition-all duration-150 hover:-translate-y-[1px] hover:border-accent hover:bg-accent hover:text-ink"
-                        >
-                          View Product
+                    {/* Empty state */}
+                    {!loading && categoryProducts.length === 0 && (
+                        <div className="flex flex-col items-center gap-3 border border-ink/10 bg-paper px-6 py-16 text-center">
+                            <FaBoxOpen size={24} className="text-steel" />
 
-                          <FaArrowRight
-                            size={9}
-                            className="transition-transform duration-150 group-hover:translate-x-1"
-                          />
-                        </Link>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-        </div>
-      </section>
-    </main>
-  );
+                            <p className="max-w-xs text-sm text-steel">
+                                No products in this category yet. Check back
+                                soon, or ask us directly.
+                            </p>
+
+                            <a
+                                href={waLink(
+                                    `Hello Fuzio Gorilla, do you have any ${
+                                        category?.name ?? ""
+                                    } products in stock?`
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1 inline-flex items-center gap-2 bg-green px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#245530]"
+                            >
+                                <FaWhatsapp />
+                                Ask on WhatsApp
+                            </a>
+                        </div>
+                    )}
+
+                    {/* Product grid — bordered card: image block with
+                        stock/featured tags, then a separate info panel
+                        with name, description, price and a "View
+                        Product" link. */}
+                    {!loading && categoryProducts.length > 0 && (
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                            {categoryProducts.map((product) => {
+                                const price = lowestPriceFor(product.id);
+
+                                const inStock = variantsLoading
+                                    ? false
+                                    : variants.some(
+                                          (v) =>
+                                              v.product === product.id &&
+                                              v.is_active &&
+                                              v.quantity > 0
+                                      );
+
+                                return (
+                                    <Link
+                                        key={product.id}
+                                        href={`/product/${product.id}`}
+                                        className="group flex flex-col border border-ink/10 bg-paper transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_10px_22px_rgba(21,20,15,0.10)]"
+                                    >
+                                        <div className="relative aspect-square overflow-hidden bg-ink-2">
+                                            {inStock && (
+                                                <span className="absolute left-2 top-2 z-10 bg-paper px-1.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.05em] text-green">
+                                                    In Stock
+                                                </span>
+                                            )}
+
+                                            {product.feature && (
+                                                <span className="absolute right-2 top-2 z-10 bg-accent px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase tracking-wide text-ink">
+                                                    Featured
+                                                </span>
+                                            )}
+
+                                            {product.image ? (
+                                                <Image
+                                                    src={
+                                                        mediaUrl(
+                                                            product.image
+                                                        )!
+                                                    }
+                                                    alt={product.name}
+                                                    fill
+                                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-steel">
+                                                    <FaBoxOpen size={22} />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-1 flex-col p-3.5">
+                                            <h3 className="text-[13.5px] font-bold leading-snug text-ink line-clamp-2">
+                                                {product.name}
+                                            </h3>
+
+                                            {product.description && (
+                                                <p className="mt-1 text-[11.5px] leading-relaxed text-steel line-clamp-2">
+                                                    {product.description}
+                                                </p>
+                                            )}
+
+                                            <p className="mt-auto pt-2.5 font-mono text-[14.5px] font-bold text-ink">
+                                                {price !== null
+                                                    ? formatPrice(price)
+                                                    : "Enquire for pricing"}
+                                            </p>
+
+                                            <span className="mt-2.5 inline-flex items-center gap-1.5 font-mono text-[11.5px] font-bold uppercase tracking-[0.06em] text-accent-dark group-hover:text-ink">
+                                                View Product
+                                                <FaArrowRight
+                                                    size={9}
+                                                    className="transition-transform group-hover:translate-x-1"
+                                                />
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </main>
+    );
 }

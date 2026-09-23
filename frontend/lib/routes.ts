@@ -8,34 +8,51 @@ const routes = {
         verifyCode: "/api/users/verify-code/",
     },
 
-    cart: {
-        create: "/api/orders/carts/",
-        detail: (cartId: string) => `/api/orders/carts/${cartId}/`,
-        items: (cartId: string) => `/api/orders/carts/${cartId}/items/`,
+    inventory: {
+        // Admin - Categories
+        categories: "/api/inventory/category/",
+        category: (id: number) => `/api/inventory/category/${id}/`,
+
+        // Admin - Colors
+        colors: "/api/inventory/color/",
+        color: (id: number) => `/api/inventory/color/${id}/`,
+
+        // Admin - Sizes
+        sizes: "/api/inventory/size/",
+        size: (id: number) => `/api/inventory/size/${id}/`,
+
+        // Admin - Products
+        products: "/api/inventory/product/",
+        product: (id: number) => `/api/inventory/product/${id}/`,
+
+        // Admin - Product Variants
+        productVariants: "/api/inventory/product/variant/",
+        productVariant: (id: number) =>
+            `/api/inventory/product/variant/${id}/`,
+
+        // Guest / Public
+        guestProducts: "/api/inventory/guest/product/",
+        publicCategories: "/api/inventory/guest/category/",
+        guestProductVariants: "/api/inventory/guest/product/variants/",
     },
 
     orders: {
-        create: "/api/orders/orders/",
-        detail: (orderNumber: string) => `/api/orders/orders/${orderNumber}/`,
+        // Guest — cart
+        createCart: "/api/orders/carts/",
+        cartItems: (cartId: string) => `/api/orders/carts/${cartId}/items/`,
+        cartDetail: (cartId: string) => `/api/orders/carts/${cartId}/`,
 
-        // TODO (backend): none of these three exist yet.
-        // - adminList needs a GET handler on an admin-only view that returns all Orders.
-        // - adminUpdateStatus needs a `status` field added to the Order model + a PATCH handler.
-        // - adminStats needs a view that aggregates revenue / order counts / product counts.
-        adminList: "/api/orders/admin/orders/",
-        adminUpdateStatus: (id: number | string) => `/api/orders/admin/orders/${id}/`,
-        adminStats: "/api/orders/admin/stats/",
-    },
+        // Guest — orders
+        createOrder: "/api/orders/orders/",
+        orderDetail: (orderNumber: string, token: string) =>
+            `/api/orders/orders/${orderNumber}/?token=${encodeURIComponent(
+                token
+            )}`,
 
-    inventory: {
-        categories: "/api/inventory/categories/",
-        products: "/api/inventory/products/",
-
-        category: (id: number) => `/api/inventory/category/${id}/`,
-        product: (id: number) => `/api/inventory/product/${id}/`,
-
-        publicCategories: "/api/inventory/pb/categories/",
-        publicProducts: "/api/inventory/pb/products/",
+        // Admin
+        adminOrders: "/api/orders/admin/orders/",
+        adminUpdateOrderStatus: (pk: number) =>
+            `/api/orders/admin/orders/${pk}/`,
     },
 };
 

@@ -125,17 +125,6 @@ async function apiFetch<T>(
         ? getAccessToken()
         : null;
 
-    /*
-     * FormData MUST NOT have Content-Type manually set.
-     *
-     * The browser automatically sets:
-     *
-     * multipart/form-data;
-     * boundary=----WebKitFormBoundary...
-     *
-     * If we manually set Content-Type, Django may not
-     * correctly parse the uploaded image/form fields.
-     */
     const isFormData = body instanceof FormData;
 
     const requestHeaders = new Headers(headers);

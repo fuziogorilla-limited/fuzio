@@ -1,168 +1,222 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode,
 } from "react";
 
-import type { AddToCartInput, CartLine } from "@/types/fields";
+import { DELIVERY_FEE } from "@/constants/shared";
+import type { ID } from "@/types/inventory";
 
-type CartContextValue = {
-  cart: CartLine[];
+const STORAGE_KEY = "fuzio_cart_v1";
 
-  cartCount: number;
+/* -------------------------------------------------------------------------- */
+/*  Types                                                                     */
+/* -------------------------------------------------------------------------- */
 
-  subtotal: number;
+export interface CartItem {
+    /** ProductVariant id — the actual unit being purchased. */
+    variantId: ID;
+    productId: ID;
+    productName: string;
+    /** Raw image path from the API (pass through mediaUrl() to render). */
+    image: string | null;
+    /** Unit selling price at the time it was added. */
+    price: number;
+    colorName: string;
+    sizeName: string;
+    sku: string;
+    quantity: number;
+}
 
-  isCartOpen: boolean;
-
-  openCart: () => void;
-
-  closeCart: () => void;
-
-  addToCart: (line: AddToCartInput) => void;
-
-  changeQty: (index: number, delta: number) => void;
-
-  removeLine: (index: number) => void;
-
-  clearCart: () => void;
+export type AddToCartInput = Omit<CartItem, "quantity"> & {
+    quantity?: number;
 };
+
+interface CartContextValue {
+    items: CartItem[];
+    isOpen: boolean;
+    itemCount: number;
+    subtotal: number;
+    deliveryFee: number;
+    total: number;
+    openCart: () => void;
+    closeCart: () => void;
+    toggleCart: () => void;
+    addItem: (input: AddToCartInput) => void;
+    removeItem: (variantId: ID) => void;
+    setQuantity: (variantId: ID, quantity: number) => void;
+    incrementQuantity: (variantId: ID) => void;
+    decrementQuantity: (variantId: ID) => void;
+    clearCart: () => void;
+}
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-export function CartProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [cart, setCart] = useState<CartLine[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+/* -------------------------------------------------------------------------- */
+/*  Storage helpers                                                           */
+/* -------------------------------------------------------------------------- */
 
-  const addToCart = (line: AddToCartInput) => {
-    const qty = line.qty ?? 1;
+function readStoredCart(): CartItem[] {
+    if (typeof window === "undefined") return [];
 
-    setCart((previousCart) => {
-      const existingIndex = previousCart.findIndex(
-        (item) =>
-          item.pid === line.pid &&
-          item.size === line.size &&
-          item.color === line.color
-      );
+    try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
 
-      if (existingIndex !== -1) {
-        const nextCart = [...previousCart];
-
-        nextCart[existingIndex] = {
-          ...nextCart[existingIndex],
-          qty: nextCart[existingIndex].qty + qty,
-        };
-
-        return nextCart;
-      }
-
-      return [
-        ...previousCart,
-        {
-          ...line,
-          qty,
-        },
-      ];
-    });
-  };
-
-  const changeQty = (index: number, delta: number) => {
-    setCart((previousCart) => {
-      const nextCart = [...previousCart];
-
-      if (!nextCart[index]) {
-        return previousCart;
-      }
-
-      nextCart[index] = {
-        ...nextCart[index],
-        qty: nextCart[index].qty + delta,
-      };
-
-      return nextCart.filter((item) => item.qty > 0);
-    });
-  };
-
-  const removeLine = (index: number) => {
-    setCart((previousCart) =>
-      previousCart.filter((_, itemIndex) => itemIndex !== index)
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  const openCart = () => {
-    setIsCartOpen(true);
-  };
-
-  const closeCart = () => {
-    setIsCartOpen(false);
-  };
-
-  const cartCount = useMemo(
-    () =>
-      cart.reduce(
-        (total, item) => total + item.qty,
-        0
-      ),
-    [cart]
-  );
-
-  const subtotal = useMemo(
-    () =>
-      cart.reduce(
-        (total, item) => total + item.price * item.qty,
-        0
-      ),
-    [cart]
-  );
-
-  const value = useMemo<CartContextValue>(
-    () => ({
-      cart,
-      cartCount,
-      subtotal,
-      isCartOpen,
-      openCart,
-      closeCart,
-      addToCart,
-      changeQty,
-      removeLine,
-      clearCart,
-    }),
-    [
-      cart,
-      cartCount,
-      subtotal,
-      isCartOpen,
-    ]
-  );
-
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? (parsed as CartItem[]) : [];
+    } catch {
+        return [];
+    }
 }
 
-export function useCart() {
-  const context = useContext(CartContext);
+/* -------------------------------------------------------------------------- */
+/*  Provider                                                                  */
+/* -------------------------------------------------------------------------- */
 
-  if (!context) {
-    throw new Error(
-      "useCart must be used within a CartProvider"
+export function CartProvider({ children }: { children: ReactNode }) {
+    const [items, setItems] = useState<CartItem[]>([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
+
+    // Load whatever was persisted, once, after mount (avoids SSR mismatch).
+    useEffect(() => {
+        setItems(readStoredCart());
+        setHydrated(true);
+    }, []);
+
+    // Persist on every change, but only after the initial load above has run
+    // — otherwise this would immediately overwrite storage with `[]`.
+    useEffect(() => {
+        if (!hydrated) return;
+
+        try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        } catch {
+            // Storage unavailable (private browsing, quota exceeded, etc).
+            // The cart still works for the rest of the session, it just
+            // won't survive a reload.
+        }
+    }, [items, hydrated]);
+
+    const openCart = useCallback(() => setIsOpen(true), []);
+    const closeCart = useCallback(() => setIsOpen(false), []);
+    const toggleCart = useCallback(() => setIsOpen((open) => !open), []);
+
+    const addItem = useCallback((input: AddToCartInput) => {
+        const quantity = input.quantity ?? 1;
+
+        setItems((prev) => {
+            const existing = prev.find(
+                (i) => i.variantId === input.variantId
+            );
+
+            if (existing) {
+                return prev.map((i) =>
+                    i.variantId === input.variantId
+                        ? { ...i, quantity: i.quantity + quantity }
+                        : i
+                );
+            }
+
+            return [...prev, { ...input, quantity }];
+        });
+
+        setIsOpen(true);
+    }, []);
+
+    const removeItem = useCallback((variantId: ID) => {
+        setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+    }, []);
+
+    const setQuantity = useCallback((variantId: ID, quantity: number) => {
+        setItems((prev) => {
+            if (quantity <= 0) {
+                return prev.filter((i) => i.variantId !== variantId);
+            }
+
+            return prev.map((i) =>
+                i.variantId === variantId ? { ...i, quantity } : i
+            );
+        });
+    }, []);
+
+    const incrementQuantity = useCallback((variantId: ID) => {
+        setItems((prev) =>
+            prev.map((i) =>
+                i.variantId === variantId
+                    ? { ...i, quantity: i.quantity + 1 }
+                    : i
+            )
+        );
+    }, []);
+
+    const decrementQuantity = useCallback((variantId: ID) => {
+        setItems((prev) =>
+            prev
+                .map((i) =>
+                    i.variantId === variantId
+                        ? { ...i, quantity: i.quantity - 1 }
+                        : i
+                )
+                .filter((i) => i.quantity > 0)
+        );
+    }, []);
+
+    const clearCart = useCallback(() => setItems([]), []);
+
+    const itemCount = useMemo(
+        () => items.reduce((sum, i) => sum + i.quantity, 0),
+        [items]
     );
-  }
 
-  return context;
+    const subtotal = useMemo(
+        () => items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+        [items]
+    );
+
+    const deliveryFee = items.length > 0 ? DELIVERY_FEE : 0;
+    const total = subtotal + deliveryFee;
+
+    const value: CartContextValue = {
+        items,
+        isOpen,
+        itemCount,
+        subtotal,
+        deliveryFee,
+        total,
+        openCart,
+        closeCart,
+        toggleCart,
+        addItem,
+        removeItem,
+        setQuantity,
+        incrementQuantity,
+        decrementQuantity,
+        clearCart,
+    };
+
+    return (
+        <CartContext.Provider value={value}>{children}</CartContext.Provider>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Hook                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export function useCart(): CartContextValue {
+    const ctx = useContext(CartContext);
+
+    if (!ctx) {
+        throw new Error("useCart must be used within a <CartProvider>");
+    }
+
+    return ctx;
 }

@@ -14,7 +14,6 @@ import {
 
 import { SITE } from "@/constants/shared";
 import { waLink } from "@/lib/utils";
-import type { ContactFormData } from "@/types/fields";
 
 const CONTACT = {
   phone: SITE.contact.phone,
@@ -53,7 +52,7 @@ export default function Contact() {
 
     const formData = new FormData(event.currentTarget);
 
-    const data: ContactFormData = {
+    const data = {
       name: String(formData.get("name") || ""),
       phone: String(formData.get("phone") || ""),
       email: String(formData.get("email") || ""),
@@ -580,7 +579,7 @@ export default function Contact() {
           </h2>
 
           <Link
-            href="/products"
+            href="/all-products"
             className="group mt-5 inline-flex items-center gap-2 border-2 border-accent px-6 py-3 text-[12px] font-bold uppercase tracking-wide text-accent transition-colors hover:bg-accent hover:text-ink"
           >
             Browse Products

@@ -43,7 +43,9 @@ class CreateCartItemSerializer(serializers.Serializer):
             variant=variant,
             defaults={
                 "quantity": quantity,
-                "price": variant.product.selling_price,
+                # Price lives on the variant, not the product — Product
+                # has no selling_price field at all.
+                "price": variant.selling_price,
             },
         )
 
@@ -247,7 +249,9 @@ class CreateOrderSerializer(serializers.Serializer):
             variant = cart_item.variant
             product = variant.product
 
-            price = product.selling_price
+            # Same fix as CreateCartItemSerializer — price is on the
+            # variant, not the product.
+            price = variant.selling_price
 
             order_items.append(
                 OrderItem(
@@ -284,8 +288,9 @@ class CreateOrderSerializer(serializers.Serializer):
 
 class ListOrdersSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Order
-        fields="__all__"
+        model = Order
+        fields = "__all__"
+
 
 class OrderUpdate(serializers.Serializer):
     status = serializers.ChoiceField(choices=Order.Status.choices)

@@ -1,390 +1,169 @@
-import {
-  FormEvent,
-  useEffect,
-  useState,
-} from "react";
-import { useRouter } from "next/navigation";
+"use client";
 
+import { useCallback, useEffect, useState } from "react";
 import apiFetch from "@/lib/api";
 import routes from "@/lib/routes";
-
+import { getErrorMessage } from "@/hooks/useInventory";
 import type {
-  AdminAuthError,
-  AdminAuthStep,
-  ForgotPasswordResponse,
-  LoginResponse,
-  VerifyCodeResponse,
-} from "@/types/fields";
+    LoginInput,
+    LoginResponse,
+    ForgotPasswordInput,
+    ForgotPasswordResponse,
+    VerifyCodeInput,
+    VerifyCodeResponse,
+    UpdateUserInput,
+    UserPayload,
+} from "@/types/auth";
 
-export const ADMIN_AUTH_MESSAGES = {
-  invalidCredentials: "Invalid email or password.",
-  loginFallback: "Invalid email or password.",
-  forgotPasswordFallback: "Something went wrong. Please try again.",
-  resendFallback: "Couldn't resend the code. Please try again.",
-  invalidCode: "That code is invalid or has expired.",
-  missingLoginTokens: "Login succeeded but the server did not return authentication tokens.",
-  missingVerificationToken: "Verification succeeded but no access token was returned.",
-  emailPlaceholder: "admin@fuziogorilla.co.ke",
-  passwordPlaceholder: "••••••••",
-  codePlaceholder: "000000",
-  resendCooldown: 30,
-} as const;
+/** Same keys apiFetch's internal token helpers read/write — keep in sync. */
+const ACCESS_TOKEN_KEY = "access_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
 
-function extractErrorMessage(
-  error: unknown,
-  fallback: string
-) {
-  const apiError = error as AdminAuthError;
-
-  if (apiError?.data) {
-    if (
-      typeof apiError.data.message === "string"
-    ) {
-      return apiError.data.message;
-    }
-
-    if (
-      typeof apiError.data.detail === "string"
-    ) {
-      return apiError.data.detail;
-    }
-
-    const firstKey = Object.keys(apiError.data)[0];
-
-    if (firstKey) {
-      const value = apiError.data[firstKey];
-
-      if (
-        Array.isArray(value) &&
-        typeof value[0] === "string"
-      ) {
-        return value[0];
-      }
-
-      if (typeof value === "string") {
-        return value;
-      }
-    }
-  }
-
-  if (apiError?.status === 401) {
-    return ADMIN_AUTH_MESSAGES.invalidCredentials;
-  }
-
-  return fallback;
+function readAccessToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
-function storeTokens(
-  access: string,
-  refresh?: string
-) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(
-    "access_token",
-    access
-  );
-
-  if (refresh) {
-    localStorage.setItem(
-      "refresh_token",
-      refresh
-    );
-  }
+function storeTokens(access: string, refresh: string): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(ACCESS_TOKEN_KEY, access);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
 }
 
-function clearTokens() {
-  if (typeof window === "undefined") return;
-
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
+function clearStoredTokens(): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
 export function useAdminAuth() {
-  const router = useRouter();
+    // null = "haven't checked localStorage yet" (avoids a flash of the
+    // login form on first paint before the client-only check runs).
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
+        null
+    );
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  const [step, setStep] =
-    useState<AdminAuthStep>("login");
+    useEffect(() => {
+        setIsAuthenticated(Boolean(readAccessToken()));
+    }, []);
 
-  const [loading, setLoading] =
-    useState(false);
+    const login = useCallback(async (input: LoginInput) => {
+        setLoading(true);
+        setError(null);
 
-  const [error, setError] =
-    useState("");
+        try {
+            const data = await apiFetch<LoginResponse>(routes.auth.login, {
+                method: "POST",
+                body: input,
+                skipAuth: true,
+            });
 
-  // Login
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  // Password reset
-  const [resetEmail, setResetEmail] =
-    useState("");
-
-  const [code, setCode] =
-    useState("");
-
-  const [resendCooldown, setResendCooldown] =
-    useState(0);
-
-  useEffect(() => {
-    if (resendCooldown <= 0) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setResendCooldown(
-        (seconds) => seconds - 1
-      );
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [resendCooldown]);
-
-  const resetMessages = () => {
-    setError("");
-  };
-
-  const handleLogin = async (
-    event: FormEvent
-  ) => {
-    event.preventDefault();
-
-    resetMessages();
-    setLoading(true);
-
-    try {
-      clearTokens();
-
-      const data =
-        await apiFetch<LoginResponse>(
-          routes.auth.login,
-          {
-            method: "POST",
-
-            body: {
-              email: email
-                .trim()
-                .toLowerCase(),
-              password,
-            },
-
-            skipAuth: true,
-            skipRefresh: true,
-          }
-        );
-
-      if (
-        !data.access ||
-        !data.refresh
-      ) {
-        throw new Error(
-          ADMIN_AUTH_MESSAGES.missingLoginTokens
-        );
-      }
-
-      storeTokens(
-        data.access,
-        data.refresh
-      );
-
-      router.replace(
-        "/admin/dashboard"
-      );
-    } catch (err) {
-      setError(
-        extractErrorMessage(
-          err,
-          ADMIN_AUTH_MESSAGES.loginFallback
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRequestCode = async (
-    event: FormEvent
-  ) => {
-    event.preventDefault();
-
-    resetMessages();
-    setLoading(true);
-
-    try {
-      await apiFetch<ForgotPasswordResponse>(
-        routes.auth.forgotPassword,
-        {
-          method: "POST",
-
-          body: {
-            email: resetEmail
-              .trim()
-              .toLowerCase(),
-          },
-
-          skipAuth: true,
-          skipRefresh: true,
+            storeTokens(data.access, data.refresh);
+            setIsAuthenticated(true);
+            return data;
+        } catch (err) {
+            const message = getErrorMessage(err, "Invalid email or password");
+            setError(message);
+            throw new Error(message);
+        } finally {
+            setLoading(false);
         }
-      );
+    }, []);
 
-      setResendCooldown(
-        ADMIN_AUTH_MESSAGES.resendCooldown
-      );
+    const logout = useCallback(() => {
+        clearStoredTokens();
+        setIsAuthenticated(false);
+    }, []);
 
-      setStep("forgot-code");
-    } catch (err) {
-      setError(
-        extractErrorMessage(
-          err,
-          ADMIN_AUTH_MESSAGES.forgotPasswordFallback
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    const forgotPassword = useCallback(async (input: ForgotPasswordInput) => {
+        setLoading(true);
+        setError(null);
 
-  const handleResendCode = async () => {
-    if (
-      resendCooldown > 0 ||
-      loading
-    ) {
-      return;
-    }
-
-    resetMessages();
-    setLoading(true);
-
-    try {
-      await apiFetch<ForgotPasswordResponse>(
-        routes.auth.forgotPassword,
-        {
-          method: "POST",
-
-          body: {
-            email: resetEmail
-              .trim()
-              .toLowerCase(),
-          },
-
-          skipAuth: true,
-          skipRefresh: true,
+        try {
+            return await apiFetch<ForgotPasswordResponse>(
+                routes.auth.forgotPassword,
+                { method: "POST", body: input, skipAuth: true }
+            );
+        } catch (err) {
+            const message = getErrorMessage(
+                err,
+                "Couldn't send a reset code. Try again."
+            );
+            setError(message);
+            throw new Error(message);
+        } finally {
+            setLoading(false);
         }
-      );
+    }, []);
 
-      setResendCooldown(
-        ADMIN_AUTH_MESSAGES.resendCooldown
-      );
-    } catch (err) {
-      setError(
-        extractErrorMessage(
-          err,
-          ADMIN_AUTH_MESSAGES.resendFallback
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    const verifyCode = useCallback(async (input: VerifyCodeInput) => {
+        setLoading(true);
+        setError(null);
 
-  const handleVerifyCode = async (
-    event: FormEvent
-  ) => {
-    event.preventDefault();
+        try {
+            // Returns a short-lived access token scoped to this one
+            // password reset — never written to localStorage.
+            return await apiFetch<VerifyCodeResponse>(
+                routes.auth.verifyCode,
+                { method: "POST", body: input, skipAuth: true }
+            );
+        } catch (err) {
+            const message = getErrorMessage(
+                err,
+                "That code is invalid or has expired"
+            );
+            setError(message);
+            throw new Error(message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-    resetMessages();
-    setLoading(true);
+    /**
+     * Sets a new password using the one-time token from verifyCode.
+     * Passed explicitly rather than relying on the stored session token,
+     * since the person resetting their password isn't logged in yet.
+     */
+    const resetPassword = useCallback(
+        async (resetAccessToken: string, newPassword: string) => {
+            setLoading(true);
+            setError(null);
 
-    try {
-      const data =
-        await apiFetch<VerifyCodeResponse>(
-          routes.auth.verifyCode,
-          {
-            method: "POST",
+            try {
+                return await apiFetch<UserPayload>(routes.auth.user, {
+                    method: "PATCH",
+                    body: { password: newPassword } as UpdateUserInput,
+                    skipAuth: true,
+                    headers: {
+                        Authorization: `Bearer ${resetAccessToken}`,
+                    },
+                });
+            } catch (err) {
+                const message = getErrorMessage(
+                    err,
+                    "Couldn't reset your password. Try again."
+                );
+                setError(message);
+                throw new Error(message);
+            } finally {
+                setLoading(false);
+            }
+        },
+        []
+    );
 
-            body: {
-              email: resetEmail
-                .trim()
-                .toLowerCase(),
-              code,
-            },
-
-            skipAuth: true,
-            skipRefresh: true,
-          }
-        );
-
-      if (!data.access) {
-        throw new Error(
-          ADMIN_AUTH_MESSAGES.missingVerificationToken
-        );
-      }
-
-      storeTokens(
-        data.access,
-        data.refresh
-      );
-
-      router.replace(
-        "/admin/dashboard"
-      );
-    } catch (err) {
-      setError(
-        extractErrorMessage(
-          err,
-          ADMIN_AUTH_MESSAGES.invalidCode
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const backToLogin = () => {
-    resetMessages();
-
-    setResetEmail("");
-    setCode("");
-    setResendCooldown(0);
-
-    setStep("login");
-  };
-
-  return {
-    step,
-    setStep,
-
-    loading,
-    error,
-
-    email,
-    setEmail,
-
-    password,
-    setPassword,
-
-    showPassword,
-    setShowPassword,
-
-    resetEmail,
-    setResetEmail,
-
-    code,
-    setCode,
-
-    resendCooldown,
-
-    resetMessages,
-    handleLogin,
-    handleRequestCode,
-    handleResendCode,
-    handleVerifyCode,
-    backToLogin,
-  };
+    return {
+        isAuthenticated,
+        loading,
+        error,
+        login,
+        logout,
+        forgotPassword,
+        verifyCode,
+        resetPassword,
+    };
 }
+
+export default useAdminAuth;
