@@ -1,12 +1,9 @@
 import base64
 from datetime import datetime
-
 import environ
 import requests
 
-
 env = environ.Env()
-
 
 class MpesaService:
 
@@ -16,7 +13,7 @@ class MpesaService:
         self.auth_url = env("SANDBOX_AUTH")
         self.stk_url = env("SANDBOX")
         self.callback_url = env("CALLBACK_URL")
-        self.business_short_code = env("BUSINESS_SHORT_CODE",default="174379")
+        self.business_short_code = env("BUSINESS_SHORT_CODE")
         self.passkey = env("MPESA_PASSKEY")
         self.transaction_type = env("TRANSACTION_TYPE",default="CustomerPayBillOnline")
 
@@ -67,9 +64,6 @@ class MpesaService:
             headers=headers,
             timeout=30,
         )
-        print("MPESA STATUS:", response.status_code)
-        print("MPESA RESPONSE:", response.text)
-
         response.raise_for_status()
 
         return response.json()

@@ -34,6 +34,8 @@ ALLOWED_HOSTS = [
     "fuzio-3y0x.onrender.com",
     "fuziogorilla.co.ke",
     "www.fuziogorilla.co.ke",
+    'drudge-plunging-antirust.ngrok-free.dev',
+    '.ngrok-free.dev',
     "localhost",
     "127.0.0.1",
 ]
