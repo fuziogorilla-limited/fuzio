@@ -9,7 +9,6 @@ from .serializers import (
     CreateOrderSerializer,
     OrderSerializer,
     ListOrdersSerializer,
-    OrderUpdate,
 )
 
 
@@ -138,15 +137,3 @@ class OrderListApiView(APIView):
         orders=Order.objects.all()
         serializer=ListOrdersSerializer(orders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-class UpdateOrderStatusApiView(APIView):
-    permission_classes=[permissions.IsAuthenticated]
-
-    def patch(self, request, pk):
-        order=get_object_or_404(Order, pk=pk)
-        serializer=OrderUpdate(order, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({
-            "message":"Order marked successfully",
-        }, status=status.HTTP_200_OK)

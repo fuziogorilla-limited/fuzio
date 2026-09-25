@@ -123,43 +123,15 @@ class CreateOrderItemSerializer(serializers.Serializer):
 
 
 class CreateOrderSerializer(serializers.Serializer):
-
     cart_id = serializers.UUIDField()
-
-    first_name = serializers.CharField(
-        max_length=100
-    )
-
-    last_name = serializers.CharField(
-        max_length=100
-    )
-
-    phone_number = serializers.CharField(
-        max_length=20
-    )
-
-    email = serializers.EmailField(
-        required=False,
-        allow_blank=True,
-    )
-
-    county = serializers.CharField(
-        max_length=100
-    )
-
-    town = serializers.CharField(
-        max_length=100
-    )
-
-    address = serializers.CharField(
-        max_length=255
-    )
-
-    additional_information = serializers.CharField(
-        max_length=500,
-        required=False,
-        allow_blank=True,
-    )
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+    phone_number = serializers.CharField(max_length=20)
+    email = serializers.EmailField(required=False,allow_blank=True,)
+    county = serializers.CharField(max_length=100)
+    town = serializers.CharField(max_length=100)
+    address = serializers.CharField(max_length=255)
+    additional_information = serializers.CharField(max_length=500,required=False,allow_blank=True,)
 
     def validate(self, attrs):
         try:
@@ -291,11 +263,3 @@ class ListOrdersSerializer(serializers.ModelSerializer):
         model = Order
         fields = "__all__"
 
-
-class OrderUpdate(serializers.Serializer):
-    status = serializers.ChoiceField(choices=Order.Status.choices)
-
-    def update(self, instance, validated_data):
-        instance.status = validated_data["status"]
-        instance.save(update_fields=["status"])
-        return instance
