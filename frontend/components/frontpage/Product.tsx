@@ -19,6 +19,9 @@ import {
 import { useCart } from "@/context/CartContext";
 import { formatPrice, mediaUrl, waLink } from "@/lib/utils";
 
+// Below this, we start naming the number rather than just saying "In Stock".
+const LOW_STOCK_THRESHOLD = 5;
+
 /** Ordered de-dupe — keeps first-seen order instead of alphabetising. */
 function uniqueInOrder(values: string[]): string[] {
     const seen = new Set<string>();
@@ -57,7 +60,8 @@ export default function Product({ productId }: { productId: string }) {
         [variants, id]
     );
 
-    // Only variants that are actually sellable right now.
+    // Only variants that are actually sellable right now — these decide
+    // which size/colour buttons are even offered.
     const activeVariants = useMemo(
         () => productVariants.filter((v) => v.is_active && v.quantity > 0),
         [productVariants]
@@ -70,6 +74,18 @@ export default function Product({ productId }: { productId: string }) {
     const availableColors = useMemo(
         () => uniqueInOrder(activeVariants.map((v) => v.color)),
         [activeVariants]
+    );
+
+    // The full set of sizes/colours this product comes in at all, stocked
+    // or not — used only to work out whether a given axis is meaningful
+    // when looking up the exact combination someone has selected.
+    const allSizes = useMemo(
+        () => uniqueInOrder(productVariants.map((v) => v.size)),
+        [productVariants]
+    );
+    const allColors = useMemo(
+        () => uniqueInOrder(productVariants.map((v) => v.color)),
+        [productVariants]
     );
 
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -87,21 +103,25 @@ export default function Product({ productId }: { productId: string }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [availableSizes, availableColors]);
 
-    const matchedVariant = useMemo(
+    // The exact row for whatever's selected, regardless of stock — this is
+    // what lets us say "Size M is 0 left" instead of a blanket message.
+    const selectedVariant = useMemo(
         () =>
-            activeVariants.find(
+            productVariants.find(
                 (v) =>
-                    (!availableSizes.length || v.size === selectedSize) &&
-                    (!availableColors.length || v.color === selectedColor)
+                    (!allSizes.length || v.size === selectedSize) &&
+                    (!allColors.length || v.color === selectedColor)
             ) ?? null,
-        [
-            activeVariants,
-            selectedSize,
-            selectedColor,
-            availableSizes,
-            availableColors,
-        ]
+        [productVariants, selectedSize, selectedColor, allSizes, allColors]
     );
+
+    const inStock = Boolean(
+        selectedVariant?.is_active && selectedVariant.quantity > 0
+    );
+
+    // Everything below (cart, buy now, price, specs) should only ever see a
+    // variant when it's genuinely purchasable.
+    const matchedVariant = inStock ? selectedVariant : null;
 
     // Keep the quantity stepper inside whatever's actually in stock.
     useEffect(() => {
@@ -158,10 +178,49 @@ export default function Product({ productId }: { productId: string }) {
         );
     }
 
-    const inStock = Boolean(matchedVariant && matchedVariant.quantity > 0);
     const displayPrice = matchedVariant
         ? Number(matchedVariant.selling_price)
         : lowestPriceFor(product.id);
+
+    // Builds the label for whatever combination is currently selected:
+    // "Only 3 left", "Size M — 0 left", "Size M · Red — 0 left", etc.
+    const stockStatus = (() => {
+        const selectionParts = [
+            selectedSize && allSizes.length ? `Size ${selectedSize}` : null,
+            selectedColor && allColors.length
+                ? `Colour ${selectedColor}`
+                : null,
+        ].filter(Boolean);
+
+        const selectionLabel = selectionParts.join(" · ");
+
+        if (matchedVariant) {
+            if (matchedVariant.quantity <= LOW_STOCK_THRESHOLD) {
+                return {
+                    positive: true,
+                    text: selectionLabel
+                        ? `${selectionLabel} — only ${matchedVariant.quantity} left`
+                        : `Only ${matchedVariant.quantity} left`,
+                };
+            }
+
+            return {
+                positive: true,
+                text: selectionLabel
+                    ? `${selectionLabel} — in stock`
+                    : "In Stock",
+            };
+        }
+
+        const remaining = selectedVariant?.quantity ?? 0;
+
+        return {
+            positive: false,
+            text: selectionLabel
+                ? `${selectionLabel} — ${remaining} left`
+                : `Out of stock — ${remaining} left`,
+        };
+    })();
 
     const changeQty = (delta: number) => {
         setQty((q) => {
@@ -295,20 +354,17 @@ export default function Product({ productId }: { productId: string }) {
 
                         <div
                             className={`mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] ${
-                                inStock ? "text-green" : "text-red-600"
+                                stockStatus.positive
+                                    ? "text-green"
+                                    : "text-red-600"
                             }`}
                         >
-                            {inStock ? (
-                                <>
-                                    <FaCheckCircle size={11} />
-                                    In Stock
-                                </>
+                            {stockStatus.positive ? (
+                                <FaCheckCircle size={11} />
                             ) : (
-                                <>
-                                    <FaTimesCircle size={11} />
-                                    Out of Stock
-                                </>
+                                <FaTimesCircle size={11} />
                             )}
+                            {stockStatus.text}
                         </div>
 
                         <p className="mt-4 text-sm leading-relaxed text-steel">
