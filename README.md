@@ -1,4 +1,3 @@
-
 ```
 fuzio
 ├─ README.md
@@ -38,6 +37,7 @@ fuzio
 │  │  ├─ tests.py
 │  │  ├─ urls.py
 │  │  └─ views.py
+│  ├─ payment.md
 │  ├─ requirements.txt
 │  ├─ static
 │  │  └─ images
@@ -47,6 +47,7 @@ fuzio
 │     ├─ apps.py
 │     ├─ migrations
 │     │  ├─ 0001_initial.py
+│     │  ├─ 0002_customuser_is_active_alter_customuser_is_superuser.py
 │     │  └─ __init__.py
 │     ├─ models.py
 │     ├─ serializers.py
@@ -61,6 +62,8 @@ fuzio
    ├─ app
    │  ├─ (site)
    │  │  ├─ about
+   │  │  │  └─ page.tsx
+   │  │  ├─ all-products
    │  │  │  └─ page.tsx
    │  │  ├─ category
    │  │  │  └─ [id]
@@ -97,40 +100,25 @@ fuzio
    │  │  └─ Products.tsx
    │  └─ frontpage
    │     ├─ About.tsx
+   │     ├─ AllProducts.tsx
    │     ├─ CartDrawer.tsx
    │     ├─ Category.tsx
    │     ├─ Checkout.tsx
    │     ├─ Contact.tsx
    │     ├─ Footer.tsx
    │     ├─ Header.tsx
-   │     └─ Home.tsx
+   │     ├─ Home.tsx
+   │     └─ Product.tsx
    ├─ constants
-   │  ├─ about.ts
-   │  ├─ admin-auth.ts
-   │  ├─ admin-dashboard.ts
-   │  ├─ cart.ts
-   │  ├─ category.ts
-   │  ├─ checkout.ts
-   │  ├─ contact.ts
-   │  ├─ footer.ts
-   │  ├─ home.ts
-   │  ├─ navigation.ts
-   │  ├─ orders.ts
-   │  ├─ products.ts
-   │  └─ site.ts
+   │  └─ shared.ts
    ├─ context
    │  └─ CartContext.tsx
    ├─ dev.md
    ├─ eslint.config.mjs
    ├─ hooks
    │  ├─ useAdminAuth.ts
-   │  ├─ useAdminDashboard.ts
-   │  ├─ useCategories.ts
-   │  ├─ useCategoryData.ts
-   │  ├─ useCheckout.ts
-   │  ├─ useHomeData.ts
-   │  ├─ useOrders.ts
-   │  └─ useProducts.ts
+   │  ├─ useInventory.ts
+   │  └─ useOrders.ts
    ├─ lib
    │  ├─ api.ts
    │  ├─ routes.ts
@@ -148,15 +136,8 @@ fuzio
    ├─ test.html
    ├─ tsconfig.json
    └─ types
-      ├─ about.ts
-      ├─ admin-auth.ts
-      ├─ admin.ts
-      ├─ cart.ts
-      ├─ category.ts
-      ├─ checkout.ts
-      ├─ contact.ts
-      ├─ home.ts
-      ├─ order.ts
-      └─ product.ts
+      ├─ auth.ts
+      ├─ inventory.ts
+      └─ orders.ts
 
 ```
