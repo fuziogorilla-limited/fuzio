@@ -50,9 +50,17 @@ const routes = {
             )}`,
 
         // Admin
+        // Status is not admin-editable: it's driven entirely by the M-Pesa
+        // callback (see payments.stkPush / PaymentStatusApiView), which also
+        // deducts inventory in the same step. There is deliberately no
+        // adminUpdateOrderStatus route — a manual PATCH would let status
+        // drift out of sync with what's actually been paid and deducted.
         adminOrders: "/api/orders/admin/orders/",
-        adminUpdateOrderStatus: (pk: number) =>
-            `/api/orders/admin/orders/${pk}/`,
+    },
+
+    payments: {
+        // Guest — M-Pesa STK push
+        stkPush: "/api/payments/stk-push/",
     },
 };
 

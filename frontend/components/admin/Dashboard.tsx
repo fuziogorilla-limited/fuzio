@@ -25,23 +25,15 @@ const LOW_STOCK_THRESHOLD = 5;
 const RECENT_ORDERS_COUNT = 6;
 const LOW_STOCK_DISPLAY_COUNT = 6;
 
-// Statuses that count as real revenue — an unpaid or failed order shouldn't
-// inflate the number the moment it's created.
-const REVENUE_STATUSES: OrderStatus[] = [
-    "paid",
-    "processing",
-    "shipped",
-    "delivered",
-];
+// Statuses that count as real revenue — an unpaid order shouldn't inflate
+// the number the moment it's created. "paid" is set automatically by the
+// M-Pesa callback, so this is the only status that currently qualifies.
+const REVENUE_STATUSES: OrderStatus[] = ["paid"];
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
     pending_payment: "bg-ink/10 text-ink",
     paid: "bg-green/10 text-green",
-    processing: "bg-accent/15 text-accent-dark",
-    shipped: "bg-accent/15 text-accent-dark",
-    delivered: "bg-green/10 text-green",
     cancelled: "bg-red-500/10 text-red-600",
-    payment_failed: "bg-red-500/10 text-red-600",
 };
 
 function formatDate(iso: string): string {
@@ -166,7 +158,7 @@ export default function Dashboard() {
                         icon={<FaMoneyBillWave size={15} />}
                         label="Revenue"
                         value={formatPrice(stats.revenue)}
-                        sublabel="Paid & fulfilled orders"
+                        sublabel="Paid orders"
                         loading={ordersLoading}
                     />
 
