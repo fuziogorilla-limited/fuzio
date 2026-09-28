@@ -378,7 +378,7 @@ export default function Home() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
+            {/* <Link
               href="/all-products"
               className="group inline-flex items-center gap-2 border-2 border-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-paper"
             >
@@ -387,7 +387,7 @@ export default function Home() {
                 size={11}
                 className="transition-transform group-hover:translate-x-1"
               />
-            </Link>
+            </Link> */}
 
             <Link
               href="/all-products"
@@ -405,8 +405,6 @@ export default function Home() {
 
       {/* =========================================================
           FEATURED PRODUCTS
-          (Not in the client copy — renders only when products are
-          marked "feature" in the admin. Delete this block to drop it.)
       ========================================================= */}
       {(productsLoading || featuredProducts.length > 0) && (
         <section className="border-t border-ink/10 bg-paper px-4 py-14 sm:px-6 sm:py-20">
@@ -522,7 +520,7 @@ export default function Home() {
 
               <p className="mt-5 max-w-md text-sm leading-relaxed text-steel-light sm:text-base">
                 Can&apos;t find what you&apos;re looking for? Send us your
-                product requirements — whether it&apos;s one item, a
+                product requirements, whether it&apos;s one item, a
                 recurring supply, or a complete procurement list. We&apos;ll
                 help you:
               </p>
