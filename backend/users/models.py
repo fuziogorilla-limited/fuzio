@@ -71,5 +71,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return(f"User {self.first_name} @ {self.email}")
 
 
+class Suppliers(models.Model):
+    first_name=models.CharField(max_length=100)
+    last_name=models.CharField(max_length=100)
+    email=models.CharField(unique=True, null=True)
+    phone_number=models.CharField(unique=True)
+    product=models.CharField(null=True)
+    created_on=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} Email:{self.email}"
 
     

@@ -4,6 +4,7 @@ const routes = {
         login: "/api/users/login/",
         refresh: "/api/users/refresh/",
         user: "/api/users/user/",
+        changePassword: "/api/users/change-password/",
         forgotPassword: "/api/users/forgot-password/",
         verifyCode: "/api/users/verify-code/",
     },
@@ -48,11 +49,17 @@ const routes = {
             `/api/orders/orders/${orderNumber}/?token=${encodeURIComponent(
                 token
             )}`,
-
-        // Admin
         adminOrders: "/api/orders/admin/orders/",
-        adminUpdateOrderStatus: (pk: number) =>
-            `/api/orders/admin/orders/${pk}/`,
+    },
+
+    payments: {
+        // Guest — M-Pesa STK push
+        stkPush: "/api/payments/stk-push/",
+    },
+
+    supplier: {
+        suppliers: "/api/users/supplier/",
+        supplier: (id: number) => `/api/users/supplier/${id}/`,
     },
 };
 

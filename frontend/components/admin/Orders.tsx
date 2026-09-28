@@ -25,11 +25,7 @@ const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
 const STATUS_STYLES: Record<OrderStatus, string> = {
     pending_payment: "bg-ink/10 text-ink",
     paid: "bg-green/10 text-green",
-    processing: "bg-accent/15 text-accent-dark",
-    shipped: "bg-accent/15 text-accent-dark",
-    delivered: "bg-green/10 text-green",
     cancelled: "bg-red-500/10 text-red-600",
-    payment_failed: "bg-red-500/10 text-red-600",
 };
 
 function formatDate(iso: string): string {
@@ -209,14 +205,12 @@ function OrderDetailPanel({ order }: { order: AdminOrderListItem }) {
 /* -------------------------------------------------------------------------- */
 
 export default function AdminOrders() {
-    const { orders, loading, error, updateOrderStatus } = useAdminOrders();
+    const { orders, loading, error } = useAdminOrders();
 
     const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">(
         "all"
     );
     const [expandedId, setExpandedId] = useState<number | null>(null);
-    const [updatingId, setUpdatingId] = useState<number | null>(null);
-    const [updateError, setUpdateError] = useState<string | null>(null);
 
     const visibleOrders = useMemo(() => {
         const filtered =
@@ -235,24 +229,6 @@ export default function AdminOrders() {
 
     const toggleExpand = (id: number) =>
         setExpandedId((prev) => (prev === id ? null : id));
-
-    const handleStatusChange = async (
-        order: AdminOrderListItem,
-        status: OrderStatus
-    ) => {
-        setUpdatingId(order.id);
-        setUpdateError(null);
-
-        try {
-            await updateOrderStatus(order.id, status);
-        } catch {
-            setUpdateError(
-                `Failed to update status for ${order.order_number}.`
-            );
-        } finally {
-            setUpdatingId(null);
-        }
-    };
 
     return (
         <div className="px-4 py-8 sm:px-6">
@@ -287,7 +263,6 @@ export default function AdminOrders() {
                 </div>
 
                 <ErrorBanner message={error} />
-                <ErrorBanner message={updateError} />
 
                 {/* Orders list */}
                 <div className="border border-ink/10 bg-paper">
@@ -363,29 +338,6 @@ export default function AdminOrders() {
                                     <span className="flex-shrink-0 font-mono text-[14px] font-bold text-ink">
                                         {formatPrice(order.total_amount)}
                                     </span>
-
-                                    <select
-                                        value={order.status}
-                                        disabled={updatingId === order.id}
-                                        onChange={(e) =>
-                                            handleStatusChange(
-                                                order,
-                                                e.target.value as OrderStatus
-                                            )
-                                        }
-                                        className="flex-shrink-0 border border-ink/15 bg-paper px-2.5 py-1.5 text-[12px] font-semibold text-ink outline-none transition-colors focus:border-accent disabled:opacity-50"
-                                    >
-                                        {STATUS_OPTIONS.map(
-                                            ([value, label]) => (
-                                                <option
-                                                    key={value}
-                                                    value={value}
-                                                >
-                                                    {label}
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
                                 </div>
 
                                 {/* Detail panel */}

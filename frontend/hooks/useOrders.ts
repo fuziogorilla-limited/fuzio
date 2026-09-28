@@ -12,8 +12,6 @@ import type {
     OrderContactInput,
     CreateOrderResponse,
     AdminOrderListItem,
-    UpdateOrderStatusResponse,
-    OrderStatus,
 } from "@/types/orders";
 
 function getErrorMessage(err: unknown, fallback: string): string {
@@ -159,9 +157,14 @@ export function useOrderLookup() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Admin — order management                                                  */
+/*  Admin — order listing                                                     */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Read-only by design. Order.status transitions automatically through the
+ * M-Pesa callback (which also deducts inventory in the same step), so there
+ * is no updateOrderStatus here — admins view orders, they don't set status.
+ */
 export function useAdminOrders() {
     const [orders, setOrders] = useState<AdminOrderListItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -183,27 +186,9 @@ export function useAdminOrders() {
         }
     }, []);
 
-    const updateOrderStatus = useCallback(
-        async (pk: ID, status: OrderStatus) => {
-            const res = await apiFetch<UpdateOrderStatusResponse>(
-                routes.orders.adminUpdateOrderStatus(pk),
-                { method: "PATCH", body: { status } }
-            );
-
-            // The endpoint only returns a message, not the updated row, so
-            // patch it into local state optimistically rather than refetch.
-            setOrders((prev) =>
-                prev.map((o) => (o.id === pk ? { ...o, status } : o))
-            );
-
-            return res;
-        },
-        []
-    );
-
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
 
-    return { orders, loading, error, fetchOrders, updateOrderStatus };
+    return { orders, loading, error, fetchOrders };
 }

@@ -34,6 +34,8 @@ ALLOWED_HOSTS = [
     "fuzio-3y0x.onrender.com",
     "fuziogorilla.co.ke",
     "www.fuziogorilla.co.ke",
+    'drudge-plunging-antirust.ngrok-free.dev',
+    '.ngrok-free.dev',
     "localhost",
     "127.0.0.1",
 ]
@@ -56,6 +58,8 @@ INSTALLED_APPS = [
     'users',
     'inventory',
     'orders',
+    'payments',
+    
     'corsheaders',
 ]
 
@@ -159,7 +163,7 @@ REST_FRAMEWORK = {
 
 #simplejwt
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=20),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 

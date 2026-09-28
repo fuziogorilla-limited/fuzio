@@ -44,16 +44,16 @@ export default function Home() {
   return (
     <main className="w-full overflow-x-hidden bg-bg">
       <section className="relative h-[calc(100dvh-72px)] w-full overflow-hidden bg-ink text-paper">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src="/ppe-optimized.mp4" type="video/mp4" />
-        </video>
+        {/* Hero image — decorative, the heading below carries the message.
+            `priority` because it's the largest above-the-fold element. */}
+        <Image
+          src="/hero.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
 
         {/* =======================================================
             OVERLAYS

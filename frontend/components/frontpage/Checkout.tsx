@@ -6,11 +6,13 @@ import Image from "next/image";
 import {
     FaBoxOpen,
     FaCheckCircle,
+    FaMobileAlt,
     FaWhatsapp,
 } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
 import { usePlaceOrder } from "@/hooks/useOrders";
+import { usePayment } from "@/hooks/usePayment";
 import { formatPrice, mediaUrl, waLink } from "@/lib/utils";
 import type { OrderContactInput, OrderPayload } from "@/types/orders";
 
@@ -42,36 +44,36 @@ const emptyForm: FormState = {
     notes: "",
 };
 
-function buildWhatsappConfirmMessage(order: OrderPayload): string {
-    let msg =
-        `Hello Fuzio Gorilla,\n\nI would like to place an order.\n\n` +
-        `Order Number:\n${order.order_number}\n\nProducts:\n`;
-
-    order.items.forEach((item) => {
-        const opts = [item.color, item.size].filter(Boolean).join(", ");
-        msg += `- ${item.product_name}${
-            opts ? ` (${opts})` : ""
-        } x${item.quantity}\n`;
-    });
-
-    msg +=
-        `\nTotal:\n${formatPrice(order.total_amount)}\n\n` +
-        `Delivery Location:\n${order.address}, ${order.town}, ${order.county}\n\n` +
-        `Name: ${order.first_name} ${order.last_name}\n` +
-        `Phone: ${order.phone_number}\n\n` +
-        `Please confirm my order and delivery details.`;
-
-    return msg;
+function buildWhatsappSupportMessage(order: OrderPayload): string {
+    return (
+        `Hello Fuzio Gorilla,\n\nI'm having trouble completing payment for my order.\n\n` +
+        `Order Number:\n${order.order_number}\n\n` +
+        `Could you please help me sort out my payment?`
+    );
 }
 
 export default function Checkout() {
     const { items, subtotal, deliveryFee, total, clearCart } = useCart();
-    const { placeOrder, submitting, error } = usePlaceOrder();
+
+    const {
+        placeOrder,
+        submitting: placingOrder,
+        error: orderError,
+    } = usePlaceOrder();
+
+    const {
+        pay,
+        status: paymentStatus,
+        error: paymentError,
+        submitting: paying,
+    } = usePayment();
 
     const [form, setForm] = useState<FormState>(emptyForm);
-    const [completedOrder, setCompletedOrder] = useState<OrderPayload | null>(
+    const [pendingOrder, setPendingOrder] = useState<OrderPayload | null>(
         null
     );
+    const [paidOrder, setPaidOrder] = useState<OrderPayload | null>(null);
+    const [mpesaPhone, setMpesaPhone] = useState("");
 
     const update = (field: keyof FormState) => (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -100,19 +102,36 @@ export default function Checkout() {
                 contact
             );
 
-            setCompletedOrder(order);
+            setPendingOrder(order);
+            setMpesaPhone(form.phone);
             clearCart();
         } catch {
-            // `error` from the hook already carries a readable message —
+            // `orderError` from the hook already carries a readable message —
             // nothing else to do here, the banner below will show it.
         }
     };
 
+    const handlePay = async (e: FormEvent) => {
+        e.preventDefault();
+
+        if (!pendingOrder) return;
+
+        const result = await pay(
+            pendingOrder.order_number,
+            pendingOrder.public_token,
+            mpesaPhone
+        );
+
+        if (result) {
+            setPaidOrder(result);
+        }
+    };
+
     /* ------------------------------------------------------------------ */
-    /*  Order placed — confirmation view                                   */
+    /*  Payment confirmed — success view                                   */
     /* ------------------------------------------------------------------ */
 
-    if (completedOrder) {
+    if (paidOrder) {
         return (
             <div className="px-4 py-16 sm:px-6 sm:py-24">
                 <div className="mx-auto max-w-md text-center">
@@ -121,11 +140,12 @@ export default function Checkout() {
                     </div>
 
                     <h1 className="text-2xl font-black tracking-tight text-ink sm:text-3xl">
-                        Order Received
+                        Payment Received
                     </h1>
 
                     <p className="mt-2 text-sm text-steel">
-                        Thank you for choosing Fuzio Gorilla.
+                        Thank you for choosing Fuzio Gorilla. Your order is
+                        confirmed and on its way.
                     </p>
 
                     <p className="mt-1 text-sm text-steel">
@@ -133,35 +153,127 @@ export default function Checkout() {
                     </p>
 
                     <div className="mt-3 mb-8 font-mono text-xl font-bold tracking-wide text-accent-dark">
-                        {completedOrder.order_number}
+                        {paidOrder.order_number}
                     </div>
 
-                    <div className="mx-auto flex max-w-xs flex-col gap-2.5">
-                        <a
-                            href={waLink(
-                                buildWhatsappConfirmMessage(completedOrder)
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex w-full items-center justify-center gap-2 bg-green px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#245530]"
-                        >
-                            <FaWhatsapp />
-                            Confirm on WhatsApp
-                        </a>
+                    <Link
+                        href="/"
+                        className="mx-auto flex w-full max-w-xs items-center justify-center border-2 border-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-paper"
+                    >
+                        Continue Shopping
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
-                        <Link
-                            href="/"
-                            className="w-full border-2 border-ink px-6 py-3 text-center text-[13px] font-bold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-paper"
-                        >
-                            Continue Shopping
-                        </Link>
+    /* ------------------------------------------------------------------ */
+    /*  Order placed, payment pending — pay with M-Pesa                    */
+    /* ------------------------------------------------------------------ */
+
+    if (pendingOrder) {
+        const isWaiting = paymentStatus === "awaiting_pin";
+        const canRetry =
+            paymentStatus === "timeout" || paymentStatus === "failed";
+
+        return (
+            <div className="px-4 py-16 sm:px-6 sm:py-24">
+                <div className="mx-auto max-w-md text-center">
+                    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-accent text-ink">
+                        <FaMobileAlt size={26} />
                     </div>
 
-                    <p className="mt-6 text-[11.5px] text-steel">
-                        Online payment is coming soon — for now, we&apos;ll
-                        confirm your order and delivery details over
-                        WhatsApp.
+                    <h1 className="text-2xl font-black tracking-tight text-ink sm:text-3xl">
+                        Complete Your Payment
+                    </h1>
+
+                    <p className="mt-2 text-sm text-steel">
+                        Order{" "}
+                        <span className="font-mono font-bold text-ink">
+                            {pendingOrder.order_number}
+                        </span>{" "}
+                        — pay{" "}
+                        <span className="font-bold text-ink">
+                            {formatPrice(pendingOrder.total_amount)}
+                        </span>{" "}
+                        via M-Pesa to confirm it.
                     </p>
+
+                    {paymentError && (
+                        <div className="mt-5 border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-left text-[13px] font-semibold text-red-700">
+                            {paymentError}
+                        </div>
+                    )}
+
+                    {isWaiting ? (
+                        <div className="mt-6">
+                            <p className="text-sm font-semibold text-ink">
+                                Check your phone
+                            </p>
+                            <p className="mt-1 text-[13px] text-steel">
+                                Enter your M-Pesa PIN on the prompt sent to{" "}
+                                <span className="font-semibold text-ink">
+                                    {mpesaPhone}
+                                </span>{" "}
+                                to finish paying.
+                            </p>
+                            <div
+                                className="mx-auto mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-ink/10"
+                                role="status"
+                                aria-label="Waiting for payment confirmation"
+                            >
+                                <div className="h-full w-1/2 animate-pulse bg-accent" />
+                            </div>
+                        </div>
+                    ) : (
+                        <form onSubmit={handlePay} className="mt-6 text-left">
+                            <label className={labelClass}>
+                                M-Pesa Phone Number
+                            </label>
+                            <input
+                                required
+                                type="tel"
+                                className={inputClass}
+                                placeholder="07XX XXX XXX"
+                                value={mpesaPhone}
+                                onChange={(e) =>
+                                    setMpesaPhone(e.target.value)
+                                }
+                            />
+
+                            <button
+                                type="submit"
+                                disabled={paying}
+                                className="mt-4 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {paying
+                                    ? "Sending Prompt..."
+                                    : canRetry
+                                        ? "Retry Payment"
+                                        : "Pay With M-Pesa"}
+                            </button>
+
+                            {paymentStatus === "timeout" && (
+                                <p className="mt-3 text-center text-[11.5px] text-steel">
+                                    Didn&apos;t get a prompt, or already paid?
+                                    Try again above, or{" "}
+                                    <a
+                                        href={waLink(
+                                            buildWhatsappSupportMessage(
+                                                pendingOrder
+                                            )
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 font-semibold text-accent-dark underline"
+                                    >
+                                        <FaWhatsapp /> message us
+                                    </a>
+                                    .
+                                </p>
+                            )}
+                        </form>
+                    )}
                 </div>
             </div>
         );
@@ -218,9 +330,9 @@ export default function Checkout() {
                 >
                     {/* Form fields */}
                     <div>
-                        {error && (
+                        {orderError && (
                             <div className="mb-5 border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-[13px] font-semibold text-red-700">
-                                {error}
+                                {orderError}
                             </div>
                         )}
 
@@ -422,10 +534,12 @@ export default function Checkout() {
 
                         <button
                             type="submit"
-                            disabled={submitting}
+                            disabled={placingOrder}
                             className="mt-5 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {submitting ? "Placing Order..." : "Place Order"}
+                            {placingOrder
+                                ? "Placing Order..."
+                                : "Place Order"}
                         </button>
 
                         <p className="mt-3 text-center text-[11px] text-steel">

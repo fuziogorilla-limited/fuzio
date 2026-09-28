@@ -7,7 +7,6 @@ from .views import (
     OrderApiView,
     OrderDetailApiView,
     OrderListApiView,
-    UpdateOrderStatusApiView,
 )
 
 urlpatterns = [
@@ -38,7 +37,4 @@ urlpatterns = [
 
     #adminList
     path("admin/orders/", OrderListApiView.as_view(), name="orders"),
-
-    #orderUpdateStatus
-    path("admin/orders/<int:pk>/", UpdateOrderStatusApiView.as_view(), name="update-status"),
 ]

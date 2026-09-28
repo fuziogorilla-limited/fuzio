@@ -40,23 +40,28 @@ export interface CartDetailResponse {
 /*  Orders                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export type OrderStatus =
-    | "pending_payment"
-    | "paid"
-    | "processing"
-    | "shipped"
-    | "delivered"
-    | "cancelled"
-    | "payment_failed";
+/**
+ * Mirrors orders.models.Order.Status exactly. This is intentionally
+ * read-only from the admin panel's perspective — the backend is the only
+ * thing that ever changes it:
+ * - "pending_payment" on creation
+ * - "paid" set by PaymentStatusApiView when the M-Pesa callback succeeds,
+ *   in the same transaction that deducts inventory
+ * - "cancelled" — a valid choice, but nothing currently sets it automatically
+ *
+ * There is no "payment_failed" order status: a failed M-Pesa attempt only
+ * updates CustomerPayment.status to "FAILED" (a separate model, keyed by
+ * checkout_request_id) and leaves the Order at "pending_payment" so the
+ * customer can retry. There are also no "processing" / "shipped" /
+ * "delivered" states — those would need to be added to Order.Status on the
+ * backend (with a migration) before they could be added here.
+ */
+export type OrderStatus = "pending_payment" | "paid" | "cancelled";
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
     pending_payment: "Pending Payment",
     paid: "Paid",
-    processing: "Processing",
-    shipped: "Shipped",
-    delivered: "Delivered",
     cancelled: "Cancelled",
-    payment_failed: "Payment Failed",
 };
 
 export interface OrderItemPayload {
@@ -130,8 +135,4 @@ export interface AdminOrderListItem {
     total_amount: string;
     created_at: string;
     updated_at: string;
-}
-
-export interface UpdateOrderStatusResponse {
-    message: string;
 }
