@@ -1,5 +1,5 @@
 from django.urls import  path
-from .views import LoginUser, UserView, ForgotPassword, VerifyCode
+from .views import LoginUser, UserView, ForgotPassword, VerifyCode, SuppliersApiView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns=[
@@ -11,4 +11,7 @@ urlpatterns=[
     path("verify-code/", VerifyCode.as_view(), name="verify"),
 
     path("refresh/", TokenRefreshView.as_view(), name="refresh"),
+
+    path("supplier/", SuppliersApiView.as_view(), name="suppliers"),
+    path("supplier/<int:pk>/", SuppliersApiView.as_view(), name="edit-supplier"),
 ]

@@ -1,11 +1,12 @@
 from rest_framework.response  import Response
 from rest_framework.views import APIView
-from .serializers import UserSerializer, LoginSerializer, ChangePasswordSerializer, VerifyCodeSerializer
+from .serializers import UserSerializer, LoginSerializer, ChangePasswordSerializer, VerifyCodeSerializer, SupplierSerializers, SupplierEditSerializers
 from rest_framework import status
-from .models import CustomUser
+from .models import CustomUser, Suppliers
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework import permissions
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 class UserView(APIView):
 
@@ -116,4 +117,37 @@ class VerifyCode(APIView):
             "access":str(access)
         }, status=status.HTTP_200_OK)
 
-    
+
+class SuppliersApiView(APIView):
+    permission_classes=[permissions.IsAdminUser]
+
+    def post(self, request):
+        serializer=SupplierEditSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"supplier added successfully",
+            "data":serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        suppliers=Suppliers.objects.all()
+        serializer=SupplierSerializers(suppliers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        item=get_object_or_404(Suppliers, pk=pk)
+        serializer=SupplierEditSerializers(item, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message":"edited successfully",
+            "data":serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        item=get_object_or_404(Suppliers, pk=pk)
+        item.delete()
+        return Response({
+            "message":"supplier deleted successfully"
+        }, status=status.HTTP_200_OK)

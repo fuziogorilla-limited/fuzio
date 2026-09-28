@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, Suppliers
 
 class UserSerializer(serializers.Serializer):
     first_name=serializers.CharField()
@@ -32,3 +32,13 @@ class ChangePasswordSerializer(serializers.Serializer):
 class VerifyCodeSerializer(serializers.Serializer):
     email=serializers.EmailField()
     code=serializers.CharField(min_length=6, max_length=6)
+
+class SupplierSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=Suppliers
+        fields="__all__"
+
+class SupplierEditSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=Suppliers
+        fields=["first_name", "last_name", "email", "phone_number", "product"]
