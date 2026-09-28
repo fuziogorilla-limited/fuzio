@@ -4,6 +4,7 @@ const routes = {
         login: "/api/users/login/",
         refresh: "/api/users/refresh/",
         user: "/api/users/user/",
+        changePassword: "/api/users/change-password/",
         forgotPassword: "/api/users/forgot-password/",
         verifyCode: "/api/users/verify-code/",
     },
@@ -48,19 +49,17 @@ const routes = {
             `/api/orders/orders/${orderNumber}/?token=${encodeURIComponent(
                 token
             )}`,
-
-        // Admin
-        // Status is not admin-editable: it's driven entirely by the M-Pesa
-        // callback (see payments.stkPush / PaymentStatusApiView), which also
-        // deducts inventory in the same step. There is deliberately no
-        // adminUpdateOrderStatus route — a manual PATCH would let status
-        // drift out of sync with what's actually been paid and deducted.
         adminOrders: "/api/orders/admin/orders/",
     },
 
     payments: {
         // Guest — M-Pesa STK push
         stkPush: "/api/payments/stk-push/",
+    },
+
+    supplier: {
+        suppliers: "/api/users/supplier/",
+        supplier: (id: number) => `/api/users/supplier/${id}/`,
     },
 };
 
