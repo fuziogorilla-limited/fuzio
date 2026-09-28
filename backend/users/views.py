@@ -1,6 +1,6 @@
 from rest_framework.response  import Response
 from rest_framework.views import APIView
-from .serializers import UserSerializer, LoginSerializer, ChangePasswordSerializer, VerifyCodeSerializer, SupplierSerializers, SupplierEditSerializers
+from .serializers import UserSerializer, LoginSerializer, ChangePasswordSerializer, VerifyCodeSerializer, SupplierSerializers, SupplierEditSerializers, DetailsSerializer
 from rest_framework import status
 from .models import CustomUser, Suppliers
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
@@ -9,13 +9,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 class UserView(APIView):
-
-    def get_permissions(self):
-        if self.request.method == "PATCH":
-            return [permissions.IsAuthenticated()]
-        
-        return [permissions.AllowAny()]
-    
+    permission_classes=[permissions.IsAuthenticated]
             
     def post(self, request):
         serializer=UserSerializer(data=request.data)
@@ -27,6 +21,12 @@ class UserView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
+    def get(self, request):
+        user=CustomUser.objects.all()
+        serializer=DetailsSerializer(user, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     def patch(self, request):
         user=request.user

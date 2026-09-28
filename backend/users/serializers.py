@@ -22,6 +22,11 @@ class UserSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+class DetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        mode=CustomUser
+        fields="__all__"
+
 class LoginSerializer(serializers.Serializer):
     email=serializers.EmailField()
     password=serializers.CharField()
