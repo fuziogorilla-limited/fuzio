@@ -202,6 +202,18 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.fuziogorilla.co.ke",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_PRELOAD=True
+SECURE_HSTS_INCLUDE_SUBDOMAINS=True
+# CSRF
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://fuziogorilla.co.ke",
+    "https://www.fuziogorilla.co.ke",
+]
+
 # HTTPS / SECURITY
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

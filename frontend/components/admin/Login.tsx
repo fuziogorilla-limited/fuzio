@@ -2,11 +2,23 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { FaEnvelope, FaLock, FaKey, FaArrowLeft } from "react-icons/fa";
+import {
+    FaEnvelope,
+    FaLock,
+    FaKey,
+    FaArrowLeft,
+    FaEye,
+    FaEyeSlash,
+} from "react-icons/fa";
 
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
-type Mode = "login" | "forgot-request" | "forgot-verify" | "forgot-reset" | "forgot-done";
+type Mode =
+    | "login"
+    | "forgot-request"
+    | "forgot-verify"
+    | "forgot-reset"
+    | "forgot-done";
 
 export default function Login() {
     const router = useRouter();
@@ -19,6 +31,7 @@ export default function Login() {
     // Login fields
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     // Forgot-password flow fields
     const [resetEmail, setResetEmail] = useState("");
@@ -26,6 +39,9 @@ export default function Login() {
     const [resetToken, setResetToken] = useState<string | null>(null);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const displayError = localError ?? error;
 
@@ -58,7 +74,11 @@ export default function Login() {
         setLocalError(null);
 
         try {
-            const data = await verifyCode({ email: resetEmail, code });
+            const data = await verifyCode({
+                email: resetEmail,
+                code,
+            });
+
             setResetToken(data.access);
             setMode("forgot-reset");
         } catch {
@@ -101,6 +121,11 @@ export default function Login() {
         setResetToken(null);
         setNewPassword("");
         setConfirmPassword("");
+
+        setShowPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+
         setMode("login");
     };
 
@@ -117,6 +142,7 @@ export default function Login() {
                         <div className="text-[16px] font-black tracking-tight text-paper">
                             FUZIO GORILLA
                         </div>
+
                         <div className="mt-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
                             Admin
                         </div>
@@ -124,16 +150,24 @@ export default function Login() {
                 </div>
 
                 <div className="border border-paper/10 bg-paper p-7 sm:p-8">
+                    {/* ------------------------------------------------------------------ */}
+                    {/* LOGIN                                                                */}
+                    {/* ------------------------------------------------------------------ */}
+
                     {mode === "login" && (
                         <>
                             <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
                                 Sign in
                             </h1>
+
                             <p className="mb-6 text-[13px] text-steel">
                                 Manage products, orders and categories.
                             </p>
 
-                            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                            <form
+                                onSubmit={handleLogin}
+                                className="flex flex-col gap-4"
+                            >
                                 <Field
                                     label="Email"
                                     icon={<FaEnvelope size={12} />}
@@ -145,18 +179,21 @@ export default function Login() {
                                     required
                                 />
 
-                                <Field
+                                <PasswordField
                                     label="Password"
-                                    icon={<FaLock size={12} />}
-                                    type="password"
                                     value={password}
                                     onChange={setPassword}
                                     placeholder="••••••••"
                                     autoComplete="current-password"
-                                    required
+                                    showPassword={showPassword}
+                                    onToggle={() =>
+                                        setShowPassword((prev) => !prev)
+                                    }
                                 />
 
-                                {displayError && <ErrorNote message={displayError} />}
+                                {displayError && (
+                                    <ErrorNote message={displayError} />
+                                )}
 
                                 <button
                                     type="submit"
@@ -181,6 +218,10 @@ export default function Login() {
                         </>
                     )}
 
+                    {/* ------------------------------------------------------------------ */}
+                    {/* FORGOT PASSWORD - REQUEST                                          */}
+                    {/* ------------------------------------------------------------------ */}
+
                     {mode === "forgot-request" && (
                         <>
                             <BackButton onClick={backToLogin} />
@@ -188,6 +229,7 @@ export default function Login() {
                             <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
                                 Reset password
                             </h1>
+
                             <p className="mb-6 text-[13px] text-steel">
                                 Enter your account email and we&apos;ll send a
                                 6-digit code.
@@ -208,7 +250,9 @@ export default function Login() {
                                     required
                                 />
 
-                                {displayError && <ErrorNote message={displayError} />}
+                                {displayError && (
+                                    <ErrorNote message={displayError} />
+                                )}
 
                                 <button
                                     type="submit"
@@ -221,13 +265,20 @@ export default function Login() {
                         </>
                     )}
 
+                    {/* ------------------------------------------------------------------ */}
+                    {/* FORGOT PASSWORD - VERIFY CODE                                      */}
+                    {/* ------------------------------------------------------------------ */}
+
                     {mode === "forgot-verify" && (
                         <>
-                            <BackButton onClick={() => setMode("forgot-request")} />
+                            <BackButton
+                                onClick={() => setMode("forgot-request")}
+                            />
 
                             <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
                                 Enter code
                             </h1>
+
                             <p className="mb-6 text-[13px] text-steel">
                                 We sent a 6-digit code to{" "}
                                 <span className="font-semibold text-ink">
@@ -236,14 +287,21 @@ export default function Login() {
                                 . It expires in 5 minutes.
                             </p>
 
-                            <form onSubmit={handleVerify} className="flex flex-col gap-4">
+                            <form
+                                onSubmit={handleVerify}
+                                className="flex flex-col gap-4"
+                            >
                                 <Field
                                     label="Reset Code"
                                     icon={<FaKey size={12} />}
                                     type="text"
                                     value={code}
                                     onChange={(v) =>
-                                        setCode(v.replace(/\D/g, "").slice(0, 6))
+                                        setCode(
+                                            v
+                                                .replace(/\D/g, "")
+                                                .slice(0, 6)
+                                        )
                                     }
                                     placeholder="000000"
                                     autoComplete="one-time-code"
@@ -251,72 +309,99 @@ export default function Login() {
                                     mono
                                 />
 
-                                {displayError && <ErrorNote message={displayError} />}
+                                {displayError && (
+                                    <ErrorNote message={displayError} />
+                                )}
 
                                 <button
                                     type="submit"
-                                    disabled={loading || code.length !== 6}
+                                    disabled={
+                                        loading || code.length !== 6
+                                    }
                                     className="mt-1 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    {loading ? "Verifying..." : "Verify Code"}
+                                    {loading
+                                        ? "Verifying..."
+                                        : "Verify Code"}
                                 </button>
                             </form>
                         </>
                     )}
+
+                    {/* ------------------------------------------------------------------ */}
+                    {/* FORGOT PASSWORD - RESET                                           */}
+                    {/* ------------------------------------------------------------------ */}
 
                     {mode === "forgot-reset" && (
                         <>
                             <h1 className="mb-1 text-xl font-black tracking-tight text-ink">
                                 Set a new password
                             </h1>
+
                             <p className="mb-6 text-[13px] text-steel">
                                 Choose a new password for your admin account.
                             </p>
 
-                            <form onSubmit={handleReset} className="flex flex-col gap-4">
-                                <Field
+                            <form
+                                onSubmit={handleReset}
+                                className="flex flex-col gap-4"
+                            >
+                                <PasswordField
                                     label="New Password"
-                                    icon={<FaLock size={12} />}
-                                    type="password"
                                     value={newPassword}
                                     onChange={setNewPassword}
                                     placeholder="At least 8 characters"
                                     autoComplete="new-password"
-                                    required
+                                    showPassword={showNewPassword}
+                                    onToggle={() =>
+                                        setShowNewPassword((prev) => !prev)
+                                    }
                                 />
 
-                                <Field
+                                <PasswordField
                                     label="Confirm Password"
-                                    icon={<FaLock size={12} />}
-                                    type="password"
                                     value={confirmPassword}
                                     onChange={setConfirmPassword}
                                     placeholder="Re-enter password"
                                     autoComplete="new-password"
-                                    required
+                                    showPassword={showConfirmPassword}
+                                    onToggle={() =>
+                                        setShowConfirmPassword(
+                                            (prev) => !prev
+                                        )
+                                    }
                                 />
 
-                                {displayError && <ErrorNote message={displayError} />}
+                                {displayError && (
+                                    <ErrorNote message={displayError} />
+                                )}
 
                                 <button
                                     type="submit"
                                     disabled={loading}
                                     className="mt-1 w-full bg-ink px-6 py-3 text-[13px] font-bold uppercase tracking-wide text-paper transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    {loading ? "Saving..." : "Save New Password"}
+                                    {loading
+                                        ? "Saving..."
+                                        : "Save New Password"}
                                 </button>
                             </form>
                         </>
                     )}
+
+                    {/* ------------------------------------------------------------------ */}
+                    {/* FORGOT PASSWORD - DONE                                             */}
+                    {/* ------------------------------------------------------------------ */}
 
                     {mode === "forgot-done" && (
                         <div className="text-center">
                             <h1 className="mb-2 text-xl font-black tracking-tight text-ink">
                                 Password updated
                             </h1>
+
                             <p className="mb-6 text-[13px] leading-relaxed text-steel">
-                                Your password has been reset. Sign in with your
-                                new password.
+                                Your password has been reset. Sign in with
+                                your new password.
                             </p>
 
                             <button
@@ -335,7 +420,7 @@ export default function Login() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Small pieces                                                              */
+/*  Regular Field                                                             */
 /* -------------------------------------------------------------------------- */
 
 function Field({
@@ -366,7 +451,9 @@ function Field({
             </span>
 
             <div className="flex items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 transition-colors focus-within:border-ink">
-                <span className="shrink-0 text-steel">{icon}</span>
+                <span className="shrink-0 text-steel">
+                    {icon}
+                </span>
 
                 <input
                     type={type}
@@ -384,6 +471,73 @@ function Field({
     );
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Password Field                                                            */
+/* -------------------------------------------------------------------------- */
+
+function PasswordField({
+    label,
+    value,
+    onChange,
+    placeholder,
+    autoComplete,
+    showPassword,
+    onToggle,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    autoComplete?: string;
+    showPassword: boolean;
+    onToggle: () => void;
+}) {
+    return (
+        <label className="block">
+            <span className="mb-2 block font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                {label}
+            </span>
+
+            <div className="flex items-center gap-2.5 border border-ink/15 bg-paper px-3.5 py-3 transition-colors focus-within:border-ink">
+                <span className="shrink-0 text-steel">
+                    <FaLock size={12} />
+                </span>
+
+                <input
+                    type={showPassword ? "text" : "password"}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    autoComplete={autoComplete}
+                    required
+                    className="w-full bg-transparent text-[13.5px] text-ink outline-none placeholder:text-steel"
+                />
+
+                <button
+                    type="button"
+                    onClick={onToggle}
+                    aria-label={
+                        showPassword
+                            ? `Hide ${label.toLowerCase()}`
+                            : `Show ${label.toLowerCase()}`
+                    }
+                    className="shrink-0 text-steel transition-colors hover:text-ink"
+                >
+                    {showPassword ? (
+                        <FaEyeSlash size={13} />
+                    ) : (
+                        <FaEye size={13} />
+                    )}
+                </button>
+            </div>
+        </label>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Error                                                                     */
+/* -------------------------------------------------------------------------- */
+
 function ErrorNote({ message }: { message: string }) {
     return (
         <div className="border-l-4 border-accent bg-accent/10 px-3.5 py-2.5 text-[12.5px] font-semibold text-accent-dark">
@@ -391,6 +545,10 @@ function ErrorNote({ message }: { message: string }) {
         </div>
     );
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Back Button                                                               */
+/* -------------------------------------------------------------------------- */
 
 function BackButton({ onClick }: { onClick: () => void }) {
     return (

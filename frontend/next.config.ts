@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: "fuzio-3y0x.onrender.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.fuziogorilla.co.ke",
+        pathname: "/media/**",
+      },
     ],
   },
 };
