@@ -1,10 +1,10 @@
+// components/Header.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
-  FaSearch,
   FaShoppingCart,
   FaBars,
   FaTimes,
@@ -12,7 +12,9 @@ import {
 } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
+import { usePublicCategories, usePublicProducts } from "@/hooks/useInventory";
 import CartDrawer from "./CartDrawer";
+import SearchBar from "../SearchBar";
 import { waLink } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -22,50 +24,37 @@ const NAV_LINKS = [
 ] as const;
 
 export default function Header() {
-  const router = useRouter();
   const { itemCount, openCart } = useCart();
 
+  // Fetched once here and shared by the desktop and mobile search bars.
+  const { products, loading: productsLoading } = usePublicProducts();
+  const { categories } = usePublicCategories();
+
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [query, setQuery] = useState("");
-
-  const runSearch = (term: string) => {
-    const q = term.trim();
-
-    router.push(q ? `/shop?q=${encodeURIComponent(q)}` : "/shop");
-
-    setMobileOpen(false);
-  };
 
   return (
     <>
-      <header className="sticky top-0 z-50 h-[72px] w-full bg-ink text-paper">
-        {/* =========================================================
-            MAIN HEADER
-        ========================================================= */}
+      <header className="sticky top-0 z-50 h-[72px] w-full bg-black text-paper">
+        {/* MAIN HEADER */}
         <div className="mx-auto flex h-full w-full max-w-[1240px] items-center gap-3 px-4 sm:gap-5 sm:px-6">
-          {/* Logo */}
+          {/* Logo (public/logo.svg) */}
           <Link
             href="/"
-            className="flex min-w-0 shrink-0 items-center gap-2.5"
+            aria-label="Fuzio Gorilla home"
+            className="flex shrink-0 items-center"
           >
-            <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center border-2 border-paper bg-accent text-[15px] font-extrabold tracking-tight text-ink">
-              FG
-            </div>
-
-            <div className="min-w-0 leading-none">
-              <div className="truncate text-[15px] font-extrabold tracking-wide sm:text-[16px]">
-                FUZIO GORILLA
-              </div>
-
-              <div className="mt-[3px] hidden font-mono text-[9px] tracking-[0.13em] text-accent sm:block">
-                TOUGHER THAN THE JOB
-              </div>
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="Fuzio Gorilla"
+              width={180}
+              height={48}
+              priority
+              unoptimized
+              className="h-10 w-auto sm:h-12"
+            />
           </Link>
 
-          {/* =========================================================
-              DESKTOP NAVIGATION
-          ========================================================= */}
+          {/* DESKTOP NAVIGATION */}
           <nav className="ml-2 hidden shrink-0 gap-6 lg:flex">
             {NAV_LINKS.map((link) => (
               <Link
@@ -78,29 +67,16 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* =========================================================
-              DESKTOP SEARCH
-          ========================================================= */}
-          <div className="hidden min-w-0 max-w-[360px] flex-1 items-center gap-2 rounded-sm border border-white/15 bg-ink-2 px-3 lg:flex">
-            <FaSearch className="shrink-0 text-[13px] opacity-60" />
-
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  runSearch(query);
-                }
-              }}
-              placeholder="What are you looking for?"
-              className="w-full min-w-0 bg-transparent px-2 py-2.5 text-[13px] text-paper outline-none placeholder:text-steel-light"
+          {/* DESKTOP SEARCH */}
+          <div className="hidden min-w-0 max-w-[360px] flex-1 lg:block">
+            <SearchBar
+              products={products}
+              categories={categories}
+              loading={productsLoading}
             />
           </div>
 
-          {/* =========================================================
-              ACTIONS
-          ========================================================= */}
+          {/* ACTIONS */}
           <div className="ml-auto flex shrink-0 items-center gap-2.5 sm:gap-3.5">
             {/* Cart */}
             <button
@@ -144,32 +120,20 @@ export default function Header() {
           </div>
         </div>
 
-        {/* =========================================================
-            MOBILE MENU
-            Positioned absolutely so it does NOT increase the
-            72px header height or push the page content downward.
-        ========================================================= */}
+        {/* MOBILE MENU
+            Absolutely positioned so it does NOT change the 72px header height. */}
         {mobileOpen && (
           <div className="absolute left-0 right-0 top-[72px] w-full border-t border-white/10 bg-ink-2 px-4 py-5 shadow-2xl sm:px-6 lg:hidden">
-            {/* Mobile search */}
-            <div className="mb-5 flex min-w-0 items-center gap-2 rounded-sm border border-white/15 bg-ink px-3">
-              <FaSearch className="shrink-0 text-[13px] opacity-60" />
-
-              <input
-                type="text"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    runSearch(query);
-                  }
-                }}
-                placeholder="What are you looking for?"
-                className="w-full min-w-0 bg-transparent px-2 py-2.5 text-[13px] text-paper outline-none placeholder:text-steel-light"
+            <div className="mb-5">
+              <SearchBar
+                products={products}
+                categories={categories}
+                loading={productsLoading}
+                inputClassName="bg-ink"
+                onNavigate={() => setMobileOpen(false)}
               />
             </div>
 
-            {/* Mobile navigation */}
             <nav className="flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -186,8 +150,7 @@ export default function Header() {
         )}
       </header>
 
-      {/* Rendered once here so every page under this header can open it
-          via useCart().openCart(), without prop drilling. */}
+      {/* Rendered once here so every page can open it via useCart().openCart() */}
       <CartDrawer />
     </>
   );
