@@ -1,10 +1,10 @@
+// app/page.tsx
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import {
   FaArrowRight,
-  FaWhatsapp,
   FaBoxOpen,
   FaShieldAlt,
   FaTruck,
@@ -12,12 +12,46 @@ import {
   FaSearch,
 } from "react-icons/fa";
 
-import { waLink, mediaUrl, formatPrice } from "@/lib/utils";
+import { mediaUrl, formatPrice } from "@/lib/utils";
 import {
   usePublicCategories,
   usePublicProducts,
   usePublicProductVariants,
 } from "@/hooks/useInventory";
+import { PILLARS, WA } from "../content";
+import {
+  Stripe,
+  SectionLabel,
+  CtaLink,
+  CtaBand,
+  IndustryTags,
+  ChipList,
+} from "@/components/shared";
+
+/* -------------------------------------------------------------------------- */
+/*  Copy                                                                      */
+/* -------------------------------------------------------------------------- */
+
+const HERO_TRUST = [
+  "Supply",
+  "Installation",
+  "Project Support",
+  "Delivery across Kenya",
+] as const;
+
+// Shown only while the backend has no categories, so the section never renders empty.
+const FALLBACK_CATEGORIES = [
+  { name: "Packaging & Warehouse", description: "Stretch film, tape, cartons, strapping and labels." },
+  { name: "Cleaning & Janitorial", description: "Chemicals, mops, brushes, cloths and bin liners." },
+  { name: "Maintenance & Workshop", description: "Adhesives, abrasives, lubricants and fasteners." },
+  { name: "Workwear & PPE", description: "Overalls, gloves, safety footwear and helmets." },
+] as const;
+
+const SOLUTION_STEPS = [
+  { tag: "01", title: "Supply", body: "Equipment, materials and consumables from established suppliers." },
+  { tag: "02", title: "Install", body: "Setup and implementation for applicable equipment and systems." },
+  { tag: "03", title: "Support", body: "Product selection, technical help and project coordination." },
+] as const;
 
 /* -------------------------------------------------------------------------- */
 /*  Copy                                                                      */
@@ -138,8 +172,169 @@ const INDUSTRIES = [
   "Offices & Facilities",
 ] as const;
 
-const MAX_CATEGORIES = 8;
+const MAX_CATEGORIES = 4;
 const MAX_FEATURED = 8;
+const CHIPS_PER_PILLAR = 4;
+
+/* -------------------------------------------------------------------------- */
+/*  Local pieces                                                              */
+/* -------------------------------------------------------------------------- */
+
+function ArrowLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 font-mono text-[11.5px] font-bold uppercase tracking-[0.06em] text-accent-dark group-hover:text-ink">
+      {children}
+      <FaArrowRight
+        size={9}
+        className="transition-transform group-hover:translate-x-1"
+      />
+    </span>
+  );
+}
+
+/** Label + heading (+ optional "view all" link) used by every section. */
+function SectionHeader({
+  label,
+  title,
+  href,
+  linkText,
+}: {
+  label: string;
+  title: string;
+  href?: string;
+  linkText?: string;
+}) {
+  return (
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <SectionLabel>{label}</SectionLabel>
+        <h2 className="mt-2 max-w-2xl text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+          {title}
+        </h2>
+      </div>
+
+      {href && linkText && (
+        <Link href={href} className="group">
+          <ArrowLabel>{linkText}</ArrowLabel>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function CategoryCard({
+  href,
+  name,
+  description,
+  image,
+}: {
+  href: string;
+  name: string;
+  description?: string | null;
+  image?: string | null;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col border border-ink/10 bg-bg transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(21,20,15,0.12)]"
+    >
+      <div className="relative flex h-[110px] w-full items-center justify-center overflow-hidden bg-ink text-steel-light">
+        {image ? (
+          <Image
+            src={mediaUrl(image)!}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover opacity-85 transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <FaLayerGroup size={28} />
+        )}
+
+        <div className="absolute inset-x-0 bottom-0">
+          <Stripe size="sm" />
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="text-[16px] font-black leading-tight tracking-tight text-ink">
+          {name}
+        </h3>
+
+        {description && (
+          <p className="mt-2 text-[12.5px] leading-relaxed text-steel line-clamp-2">
+            {description}
+          </p>
+        )}
+
+        <div className="mt-auto pt-4">
+          <ArrowLabel>Shop Now</ArrowLabel>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function ProductCard({
+  id,
+  name,
+  image,
+  price,
+  inStock,
+}: {
+  id: number | string;
+  name: string;
+  image?: string | null;
+  price: number | null;
+  inStock: boolean;
+}) {
+  return (
+    <Link
+      href={`/product/${id}`}
+      className="group flex flex-col border border-ink/10 bg-paper transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_10px_22px_rgba(21,20,15,0.10)]"
+    >
+      <div className="relative aspect-square overflow-hidden bg-ink-2">
+        {inStock && (
+          <span className="absolute left-2 top-2 z-10 bg-paper px-1.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.05em] text-green">
+            In Stock
+          </span>
+        )}
+
+        {image ? (
+          <Image
+            src={mediaUrl(image)!}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-steel">
+            <FaBoxOpen size={22} />
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col p-3.5">
+        <h3 className="text-[13.5px] font-bold leading-snug text-ink line-clamp-2">
+          {name}
+        </h3>
+
+        <p className="mt-auto pt-2.5 font-mono text-[14.5px] font-bold text-ink">
+          {price !== null ? formatPrice(price) : "Enquire for pricing"}
+        </p>
+
+        <div className="mt-2.5">
+          <ArrowLabel>View Product</ArrowLabel>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Page                                                                      */
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*  Small shared pieces                                                       */
@@ -205,10 +400,9 @@ export default function Home() {
             <div className="max-w-4xl">
               <div className="mb-4 flex items-center gap-3">
                 <span className="h-[2px] w-8 bg-accent" />
-
-                <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-                  Fuzio Gorilla
-                </span>
+                <SectionLabel tone="light">
+                  Energy • Machinery • Industrial Supplies
+                </SectionLabel>
               </div>
 
               <h1 className="max-w-4xl text-4xl font-black leading-[0.95] tracking-tight md:text-5xl">
@@ -407,7 +601,10 @@ export default function Home() {
           FEATURED PRODUCTS
       ========================================================= */}
       {(productsLoading || featuredProducts.length > 0) && (
-        <section className="border-t border-ink/10 bg-paper px-4 py-14 sm:px-6 sm:py-20">
+        <section
+          id="featured"
+          className="border-t border-ink/10 px-4 py-14 sm:px-6 sm:py-20"
+        >
           <div className="mx-auto max-w-[1240px]">
             <div className="mb-8">
               <SectionLabel>Featured Products</SectionLabel>
@@ -430,74 +627,24 @@ export default function Home() {
                 ))}
 
               {!productsLoading &&
-                featuredProducts.map((product) => {
-                  const price = lowestPriceFor(product.id);
-
-                  const inStock = variantsLoading
-                    ? false
-                    : variants.some(
+                featuredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    image={product.image}
+                    price={lowestPriceFor(product.id)}
+                    inStock={
+                      !variantsLoading &&
+                      variants.some(
                         (v) =>
                           v.product === product.id &&
                           v.is_active &&
                           v.quantity > 0
-                      );
-
-                  return (
-                    <Link
-                      key={product.id}
-                      href={`/product/${product.id}`}
-                      className="group flex flex-col border border-ink/10 bg-paper transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_10px_22px_rgba(21,20,15,0.10)]"
-                    >
-                      <div className="relative aspect-square overflow-hidden bg-ink-2">
-                        {inStock && (
-                          <span className="absolute left-2 top-2 z-10 bg-paper px-1.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.05em] text-green">
-                            In Stock
-                          </span>
-                        )}
-
-                        {product.image ? (
-                          <Image
-                            src={mediaUrl(product.image)!}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-steel">
-                            <FaBoxOpen size={22} />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-1 flex-col p-3.5">
-                        <h3 className="text-[13.5px] font-bold leading-snug text-ink line-clamp-2">
-                          {product.name}
-                        </h3>
-
-                        {product.description && (
-                          <p className="mt-1 text-[11.5px] leading-relaxed text-steel line-clamp-2">
-                            {product.description}
-                          </p>
-                        )}
-
-                        <p className="mt-auto pt-2.5 font-mono text-[14.5px] font-bold text-ink">
-                          {price !== null
-                            ? formatPrice(price)
-                            : "Enquire for pricing"}
-                        </p>
-
-                        <span className="mt-2.5 inline-flex items-center gap-1.5 font-mono text-[11.5px] font-bold uppercase tracking-[0.06em] text-accent-dark group-hover:text-ink">
-                          View Product
-                          <FaArrowRight
-                            size={9}
-                            className="transition-transform group-hover:translate-x-1"
-                          />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
+                      )
+                    }
+                  />
+                ))}
             </div>
           </div>
         </section>
@@ -658,7 +805,7 @@ export default function Home() {
       {/* =========================================================
           FINAL CTA
       ========================================================= */}
-      <section className="bg-accent px-4 py-12 text-center text-ink sm:px-6 sm:py-14">
+      <section className="border-t border-ink/10 px-4 py-14 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-[1240px]">
           <div className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-ink/60">
             Don&apos;t see what you need?
